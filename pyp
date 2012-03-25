@@ -574,7 +574,7 @@ class Pyp(object):
         if options.text_file:
             if not os.path.exists(options.text_file):
                 print Colors.RED + options.text_file + " does not exist" + Colors.OFF
-                sys.exit()
+                sys.exit(1)
             else:
                 f = [x.rstrip() for x in open(options.text_file) ]
                 return f
@@ -1029,7 +1029,7 @@ class Pyp(object):
                         output = eval(cm, variables) #500 lines of code wrap this line!!!
                     except KeyboardInterrupt:
                         print Colors.RED + "killed by user" + Colors.OFF
-                        sys.exit()
+                        sys.exit(1)
                     except Exception, err:
                         self.history[self.n]['error'] = Colors.RED + 'error: ' + str(err) + Colors.OFF, Colors.RED + cmd + Colors.OFF
                         break
@@ -1074,7 +1074,7 @@ class Pyp(object):
                 user_output =  [file_input[n]]
             elif power_pipe: #  power pipe variable is referenced, but does not exist.
                 print Colors.RED + "YOU'RE LIST VARIABLE DOES NOT EXIST: " + Colors.GREEN + power_pipe + Colors.OFF
-                sys.exit()
+                sys.exit(1)
         except: #default output is null per line
             user_output =[' ']   
     
@@ -1177,10 +1177,10 @@ class Pyp(object):
             output = eval(cmd, variables) #1000 lines of code wrap this line!!!
         except KeyboardInterrupt:
             print Colors.RED + "killed by user" + Colors.OFF
-            sys.exit()
+            sys.exit(1)
         except Exception, err:
             print Colors.RED + 'error: ' + str(err) + Colors.OFF, Colors.RED + cmd + Colors.OFF
-            sys.exit()
+            sys.exit(1)
 
         if output is None: #allows use of inplace methods like sort
             output = variables[power_pipe_type]
@@ -1355,7 +1355,7 @@ class Pyp(object):
                     else:
                         print cmd # normal output
                 elif options.keep_false: #prints blank lines for lost False commands 
-                    print 
+                    print
             else: #error
                 print Colors.RED + self.history[self.history_index]['error'][0] + Colors.RED + ' : ' + self.history[self.history_index]['error'][1] + Colors.OFF
         
@@ -1389,7 +1389,7 @@ class Pyp(object):
                     rerun_path = rerun_gpid_path
                 else:
                     print Colors.RED + rerun_path + " does not exist" + Colors.OFF
-                    sys.exit()
+                    sys.exit(1)
             pipe_input = [x.strip() for x in open(rerun_path) if x.strip()]
             #print pipe_input
         
@@ -2161,8 +2161,9 @@ if __name__ == '__main__':
     
     try:
         pyp = Pyp().main()
-    except Exception, err:
+    except BaseException as err:
         print Colors.RED + str(err) + Colors.OFF 
+        sys.exit(1)
    
         
         
