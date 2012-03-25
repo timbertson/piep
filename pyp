@@ -70,6 +70,8 @@ class NoColors(object):
     BOLD =  ''
     COLORS = [OFF, RED, GREEN, YELLOW, MAGENTA, CYAN, WHITE, BLUE, BOLD]
       
+#from lazy_list import LazyList
+#class PowerPipeList(LazyList):
 class PowerPipeList(list,PowerPipeListCustom):
     '''
     defines pp object, allows manipulation of entire input using python list methods
