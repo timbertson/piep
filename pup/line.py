@@ -1,30 +1,23 @@
 import os
-def delegate(fn, wrap_return=True, multi=False):
-	if multi:
-		return wrap_multi(fn)
-	if wrap_return:
-		return wrap(fn)
-	return passthru(fn)
-
 def wrap(fn):
-	return lambda self, *a, **k: Line(fn(self._Line__str, *a, **k))
+	return lambda *a, **k: Line(fn(*a, **k))
 
 def wrap_multi(fn):
-	return lambda self, *a, **k: [Line(l) for l in fn(self._Line__str, *a, **k)]
+	return lambda *a, **k: [Line(l) for l in fn(*a, **k)]
 
 def passthru(fn):
-	return lambda self, *a, **k: fn(self._Line__str, *a, **k)
+	return lambda *a, **k: fn(*a, **k)
 
 
-#TODO: get ".".join(Line("a b c").split()) working
-class Line(object):
-	def __new__(cls, s):
+class Line(str):
+	def __new__(cls, s, *a, **k):
 		if s is None:
 			return s
-		return super(Line, cls).__new__(cls, s)
+		return super(Line, cls).__new__(cls, s, *a, **k)
 
-	def __init__(self, s):
-		self.__str = s
+	@classmethod
+	def add_method(cls, fn, name = None):
+		setattr(cls, name or fn.__name__, fn)
 
 	@wrap
 	def ext(s):
@@ -38,6 +31,7 @@ class Line(object):
 	splitext = wrap_multi(os.path.splitext)
 	dirname = wrap(os.path.dirname)
 	basename = wrap(os.path.basename)
+	filename = basename
 	trimext = wrap(lambda s: os.path.splitext(s)[0])
 	splitline = wrap_multi(str.splitlines)
 	splittab = wrap_multi(lambda s: s.split('\t'))
@@ -47,40 +41,26 @@ class Line(object):
 	splitpath = wrap_multi(lambda s: s.split(os.path.sep))
 
 	def __str__(self):
-		return self.__str
+		return self
 
 	# copy all `str` builtins
 	capitalize = wrap(str.capitalize)
 	center     = wrap(str.center)
-	count      = passthru(str.count)
 	encode     = wrap(str.encode)
-	endswith   = passthru(str.endswith)
 	expandtabs = wrap(str.expandtabs)
-	find       = passthru(str.find)
 	format     = wrap(str.format)
-	index      = passthru(str.index)
-	isalnum    = passthru(str.isalnum)
-	isalpha    = passthru(str.isalpha)
-	isdigit    = passthru(str.isdigit)
-	islower    = passthru(str.islower)
-	isspace    = passthru(str.isspace)
-	istitle    = passthru(str.istitle)
-	isupper    = passthru(str.isupper)
 	join       = wrap(str.join)
-	ljust      = delegate(str.ljust)
-	lower      = delegate(str.lower)
-	lstrip     = delegate(str.lstrip)
+	ljust      = wrap(str.ljust)
+	lower      = wrap(str.lower)
+	lstrip     = wrap(str.lstrip)
 	partition  = wrap_multi(str.partition)
 	replace    = wrap(str.replace)
-	rfind      = passthru(str.rfind)
-	rindex     = passthru(str.rindex)
 	rjust      = wrap(str.rjust)
 	rpartition = wrap_multi(str.rpartition)
 	rsplit     = wrap_multi(str.rsplit)
-	rstrip     = delegate(str.rstrip)
+	rstrip     = wrap(str.rstrip)
 	split      = wrap_multi(str.split)
 	splitlines = wrap_multi(str.splitlines)
-	startswith = passthru(str.startswith)
 	strip      = wrap(str.strip)
 	swapcase   = wrap(str.swapcase)
 	title      = wrap(str.title)
@@ -89,29 +69,13 @@ class Line(object):
 	zfill      = wrap(str.zfill)
 
 	# and specials:
-	__repr__     = passthru(str.__repr__)
-	#__add__      = delegate(str.__add__)
+	__add__      = wrap(str.__add__)
 	# coerce EVERYTHING into a string
 
-	@wrap
-	def __add__(self, other):
-		return self + str(other)
-
-	__contains__ = passthru(str.__contains__)
-	__eq__       = passthru(str.__eq__)
-	__hash__     = passthru(str.__hash__)
 	__format__   = wrap(str.__format__)
-	__ge__       = passthru(str.__ge__)
 	__getitem__  = wrap(str.__getitem__)
-	__gt__       = passthru(str.__gt__)
-	__le__       = passthru(str.__le__)
-	__len__      = passthru(str.__len__)
-	__lt__       = passthru(str.__lt__)
-	__lt__       = passthru(str.__lt__)
 	__mod__      = wrap(str.__mod__)
 	__mul__      = wrap(str.__mul__)
-	__ne__       = passthru(str.__ne__)
 	__rmod__     = wrap(str.__rmod__)
 	__rmul__     = wrap(str.__rmul__)
-	__sizeof__   = passthru(str.__sizeof__)
 

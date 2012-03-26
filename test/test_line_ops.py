@@ -34,5 +34,9 @@ class TestLineFunctions(TestCase):
 		self.assertEqual(run('p.ext()', ['a/b/c.py', 'foo']), ['.py', ''])
 		self.assertEqual(run('p.extonly()', ['a/b/c.py', 'foo']), ['py'])
 		self.assertEqual(run('p.splitext()', ['a/b/c.py']), ['a/b/c .py'])
+	
+	def test_multiple_path_functions(self):
+		self.assertEqual(run('p.upper().ext()', ['a.py']), ['.PY'])
+		self.assertEqual(run('p.filename().splitext() | "_".join(p)', ['a/b/c.py']), ['c_.py'])
 
 
