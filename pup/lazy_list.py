@@ -48,6 +48,12 @@ class LazyList(object):
 	def len(self):
 		return iter_length(self.src)
 
+	def __add__(self, other):
+		return list(self) + other
+
+	def __radd__(self, other):
+		return other + list(self)
+
 	def debug(self, note=None):
 		return
 		a, b = tee(self.src)

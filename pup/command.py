@@ -5,18 +5,45 @@ import os, sys
 import ast
 from optparse import OptionParser
 import itertools
-import lazy_list
+
+from pup.lazy_list import LazyList
+from pup.line import Line
+
+if sys.version_info < (3,):
+	imap = itertools.imap
+else:
+	imap = map
+
+class Exit(BaseException): pass
+
 
 DEBUG = False
 def debug(*a):
 	if not DEBUG: return
 	print(*a)
 
-def main():
+def main(argv=None):
+	try:
+		for line in run(argv):
+			print(line)
+		return 0
+	except Exit as e:
+		if e.message:
+			print(e.message, file=sys.stderr)
+		sys.exit(1)
+	except KeyboardInterrupt:
+		print("interrupted", file=sys.stderr)
+		sys.exit(1)
+
+def run(argv=None):
 	global DEBUG
+	if argv is None: argv = sys.argv[1:]
 	p = OptionParser()
 	p.add_option('--debug', action='store_true')
-	opts, args = p.parse_args()
+	p.add_option('-j', '--join', default=' ')
+	p.add_option('-e', '--eval', action='append', dest='evals', default=[], help='evaluate something before running the script (in global scope, may be given multiple times)')
+	p.add_option('--import', action='append', dest='imports', default=[], help='add a module to global scope (may be given multiple times)')
+	opts, args = p.parse_args(argv)
 	DEBUG = opts.debug
 
 	assert len(args) > 0
@@ -24,10 +51,12 @@ def main():
 	additional_files = args[1:]
 	#TODO: something with additional_files!
 
+	bindings = init_globals(opts)
+
 	exprs = split_on_pipes(cmd)
 	debug("Split expressions: " + "\n".join(exprs))
 	piped_exprs = [ast.parse(cmd.strip() + '\n', mode='eval').body for cmd in exprs]
-	output = eval_pipes(piped_exprs)
+	output = eval_pipes(piped_exprs, bindings)
 
 	# strings are iterable, but we don't want to do that!
 	if isinstance(output, basestring):
@@ -36,11 +65,30 @@ def main():
 		output = iter(output)
 	except TypeError as err:
 		debug(err)
-		print(output)
+		yield output
 	else:
 		for line in output:
 			if line is not None:
-				print(line)
+				if isinstance(line, tuple) or isinstance(line, list):
+					line = opts.join.join(map(str, line))
+				yield line
+
+def init_globals(opts):
+	pp = LazyList(imap(lambda x: Line(x.rstrip('\n\r')), iter(sys.stdin)))
+	globs = {'pp':pp}
+	for import_mod in opts.imports:
+		import_node = ast.Import(names=[ast.alias(name=import_mod, asname=None)])
+		code = compile(ast.fix_missing_locations(ast.Module(body=[import_node])), 'import %s' % (import_mod,), 'exec')
+		eval(code, globs)
+	for eval_str in opts.evals:
+		try:
+			exec eval_str in globs
+			#eval(eval_str, globs)
+			print(repr(globs.keys()))
+		except SyntaxError as e:
+			raise Exit("got error: %s\nwhile evaluating: %s" % (e,eval_str))
+	return globs
+
 
 def split_on_pipes(cmds):
 	'''
@@ -114,14 +162,13 @@ def detect_mode(expr):
 		return MODE.LINE
 	raise RuntimeError("unknown mode for expression that references: %r (expr = %s)" % (names, ast.dump(expr)))
 
-from line import Line
-def eval_pipes(exprs):
-	pp = lazy_list.LazyList(itertools.imap(lambda x: Line(x.rstrip('\n\r')), iter(sys.stdin)))
+def eval_pipes(exprs, bindings):
+	pp = bindings['pp']
 	for expr in exprs:
-		if not isinstance(pp, lazy_list.LazyList):
+		if not isinstance(pp, LazyList):
 			# if the last expr turned pp into a normal list or some other iterable, fix that...
-			pp = lazy_list.LazyList(iter(pp))
-		expr_globals = {'pp': pp}
+			pp = LazyList(iter(pp))
+		bindings['pp'] = pp
 		mode = detect_mode(expr)
 		if mode == MODE.LINE:
 			expr = make_linewise_transform(expr)
@@ -134,7 +181,7 @@ def eval_pipes(exprs):
 		ast.fix_missing_locations(expr)
 
 		expr = compile(expr, '(input)', 'eval')
-		pp = eval(expr, expr_globals)
+		pp = eval(expr, bindings)
 		debug("after pipe, pp = %r" % (pp,))
 	return pp
 

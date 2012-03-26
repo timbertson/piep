@@ -38,6 +38,7 @@ class Line(object):
 	splitext = wrap_multi(os.path.splitext)
 	dirname = wrap(os.path.dirname)
 	basename = wrap(os.path.basename)
+	trimext = wrap(lambda s: os.path.splitext(s)[0])
 	splitline = wrap_multi(str.splitlines)
 	splittab = wrap_multi(lambda s: s.split('\t'))
 	splitcomma = wrap_multi(lambda s: s.split(','))
@@ -52,7 +53,6 @@ class Line(object):
 	capitalize = wrap(str.capitalize)
 	center     = wrap(str.center)
 	count      = passthru(str.count)
-	decode     = wrap(str.decode)
 	encode     = wrap(str.encode)
 	endswith   = passthru(str.endswith)
 	expandtabs = wrap(str.expandtabs)
@@ -90,7 +90,6 @@ class Line(object):
 
 	# and specials:
 	__repr__     = passthru(str.__repr__)
-	__getslice__ = wrap(str.__getslice__)
 	#__add__      = delegate(str.__add__)
 	# coerce EVERYTHING into a string
 
@@ -104,7 +103,6 @@ class Line(object):
 	__format__   = wrap(str.__format__)
 	__ge__       = passthru(str.__ge__)
 	__getitem__  = wrap(str.__getitem__)
-	__getslice__ = wrap(str.__getslice__)
 	__gt__       = passthru(str.__gt__)
 	__le__       = passthru(str.__le__)
 	__len__      = passthru(str.__len__)
