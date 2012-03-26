@@ -139,6 +139,15 @@ class LazyList(object):
 		self._replace(ifilter(lambda x: x is not None, imap(_transform, self.src)))
 		return self
 
+	def map_index(self, fn):
+		i = [0]
+		def _call(line):
+			try:
+				return fn(line, i[0])
+			finally:
+				i[0] += 1
+		return self.map(_call)
+
 	def filter(self, f=None):
 		self._replace(ifilter(f, self.src))
 		return self

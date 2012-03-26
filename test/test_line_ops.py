@@ -13,7 +13,6 @@ class TestJoining(TestCase):
 			['a/b/c'])
 
 	def test_special_characters_in_join(self):
-		self.skipTest('pending')
 		self.assertEqual(
 			run('--join=\\t', 'p.split(".")', ['a.b.c']),
 			['a\tb\tc'])
@@ -25,10 +24,9 @@ class TestFilters(TestCase):
 				['1','2'])
 
 	def test_index(self):
-		self.skipTest('pending')
 		self.assertEqual(
-				run('i % 2 == 0', ['1', '2', '3', '4']),
-				['2','4'])
+				run('--debug', 'i % 2 == 0', ['0', '1', '2', '3', '4']),
+				['0', '2','4'])
 
 class TestLineFunctions(TestCase):
 	def test_path_functions(self):

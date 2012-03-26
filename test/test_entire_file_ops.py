@@ -27,7 +27,6 @@ class ReplaceWithNonList(TestCase):
 			run('pp.len()', ['1','2','3']), ['3'])
 
 	def test_single_string(self):
-		self.skipTest('broken')
 		self.assertEqual(
 			run('pp.join(".")', ['1','2','3']), ['1.2.3'])
 

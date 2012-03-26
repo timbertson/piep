@@ -17,3 +17,9 @@ class TestEval(TestCase):
 				run('--eval=PREFIX="----"', '[PREFIX] + pp', ['line']),
 				['----', 'line'])
 
+class TestHistory(TestCase):
+	def test_restoring_previous_results(self):
+		self.skipTest("pending")
+		self.assertEqual(
+				run('store(p0=p) | p.extonly() | p, "is a", p0', ['a.py','b.jpg']),
+				['a.py is a py', 'b.jpg is a jpg'])

@@ -51,6 +51,9 @@ def run(argv=None):
 	additional_files = args[1:]
 	#TODO: something with additional_files!
 
+	opts.join = opts.join.decode('string_escape')
+	# bytes(myString, "utf-8").decode("unicode_escape") # python3
+
 	bindings = init_globals(opts)
 
 	exprs = split_on_pipes(cmd)
@@ -156,11 +159,11 @@ def detect_mode(expr):
 	found_vars = important_vars.intersection(names)
 	if len(found_vars) > 1:
 		raise RuntimeError("ambiguous expression uses too many variables!")
+
+	mode = MODE.LINE
 	if 'pp' in found_vars:
-		return MODE.GLOBAL
-	if 'p' in found_vars:
-		return MODE.LINE
-	raise RuntimeError("unknown mode for expression that references: %r (expr = %s)" % (names, ast.dump(expr)))
+		mode = MODE.GLOBAL
+	return mode, names
 
 def eval_pipes(exprs, bindings):
 	pp = bindings['pp']
@@ -169,9 +172,9 @@ def eval_pipes(exprs, bindings):
 			# if the last expr turned pp into a normal list or some other iterable, fix that...
 			pp = LazyList(iter(pp))
 		bindings['pp'] = pp
-		mode = detect_mode(expr)
+		mode, vars = detect_mode(expr)
 		if mode == MODE.LINE:
-			expr = make_linewise_transform(expr)
+			expr = make_linewise_transform(expr, vars)
 
 		# compile() wants an expr at the top level
 		if not isinstance(expr, ast.Expr):
@@ -185,16 +188,24 @@ def eval_pipes(exprs, bindings):
 		debug("after pipe, pp = %r" % (pp,))
 	return pp
 
-def make_linewise_transform(expr):
+def make_linewise_transform(expr, vars):
+	input_args = [ast.Name(id='p', ctx=ast.Load())]
+	method_name = 'map'
+	debug("making linewise expr that uses the following vars: %r" % (vars,))
+
+	if 'i' in vars:
+		input_args.append(ast.Name(id='i', ctx=ast.Load()))
+		method_name = 'map_index'
+
 	transformer = ast.Lambda(
 		args=ast.arguments(
-			args=[ast.Name(id='p', ctx=ast.Load())],
+			args=input_args,
 			vararg=None,
 			kwarg=None,
 			defaults=[]
 		),
 		body=expr)
-	map_fn = ast.Attribute(value=ast.Name(id='pp', ctx=ast.Load()), attr='map', ctx=ast.Load())
+	map_fn = ast.Attribute(value=ast.Name(id='pp', ctx=ast.Load()), attr=method_name, ctx=ast.Load())
 	mapping = ast.Call(
 			func=map_fn,
 			args=[transformer],
