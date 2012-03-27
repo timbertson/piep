@@ -6,16 +6,15 @@ import ast
 from optparse import OptionParser
 import itertools
 
-from pup.lazy_list import LazyList
+from pup.list import Stream, BaseList, List
 from pup.line import Line
+from pup.builtins import builtins
+from pup.error import Exit
 
 if sys.version_info < (3,):
 	imap = itertools.imap
 else:
 	imap = map
-
-class Exit(BaseException): pass
-
 
 DEBUG = False
 def debug(*a):
@@ -34,31 +33,44 @@ def main(argv=None):
 	except KeyboardInterrupt:
 		print("interrupted", file=sys.stderr)
 		sys.exit(1)
+	except Exception as e:
+		if DEBUG:
+			import traceback
+			traceback.print_exc(file=sys.stderr)
+		print(e.message, file=sys.stderr)
+		sys.exit(1)
 
 def run(argv=None):
 	global DEBUG
 	if argv is None: argv = sys.argv[1:]
-	p = OptionParser()
+	p = OptionParser('usage: %prog [OPTIONS] <expr> [additional_files ...]')
 	p.add_option('--debug', action='store_true')
 	p.add_option('-j', '--join', default=' ')
 	p.add_option('-e', '--eval', action='append', dest='evals', default=[], help='evaluate something before running the script (in global scope, may be given multiple times)')
-	p.add_option('--import', action='append', dest='imports', default=[], help='add a module to global scope (may be given multiple times)')
+	p.add_option('-m', '--import', action='append', dest='imports', default=[], help='add a module to global scope (may be given multiple times)')
+	p.add_option('-f', '--file', action='append', dest='files', default=[], help='add another input file (available as f[n], can be given multiple times)')
+	p.add_option('-i', '--input', dest='input', help='use a named file (instead of stdin)')
 	opts, args = p.parse_args(argv)
 	DEBUG = opts.debug
 
 	assert len(args) > 0
 	cmd = args[0]
-	additional_files = args[1:]
-	#TODO: something with additional_files!
+	opts.files += args[1:]
+	input_file = open(opts.input) if opts.input else sys.stdin
 
 	opts.join = opts.join.decode('string_escape')
 	# bytes(myString, "utf-8").decode("unicode_escape") # python3
 
-	bindings = init_globals(opts)
+	bindings = init_globals(opts, input_file)
 
 	exprs = split_on_pipes(cmd)
 	debug("Split expressions: " + "\n".join(exprs))
-	piped_exprs = [ast.parse(cmd.strip() + '\n', mode='eval').body for cmd in exprs]
+	def compile_expr(expr):
+		try:
+			return ast.parse(cmd.strip() + '\n', mode='eval').body
+		except SyntaxError as e:
+			raise Exit("got error: %s\nwhile evaluating: %s" % (e,expr))
+	piped_exprs = [compile_expr(cmd) for cmd in exprs]
 	output = eval_pipes(piped_exprs, bindings)
 
 	# strings are iterable, but we don't want to do that!
@@ -76,9 +88,13 @@ def run(argv=None):
 					line = opts.join.join(map(str, line))
 				yield line
 
-def init_globals(opts):
-	pp = LazyList(imap(lambda x: Line(x.rstrip('\n\r')), iter(sys.stdin)))
-	globs = {'pp':pp}
+def init_globals(opts, input_file):
+	def make_stream(f):
+		return Stream(imap(lambda x: Line(x.rstrip('\n\r')), iter(f)))
+
+	pp = make_stream(input_file)
+	globs = builtins.copy()
+	globs['pp'] = pp
 	for import_mod in opts.imports:
 		import_node = ast.Import(names=[ast.alias(name=import_mod, asname=None)])
 		code = compile(ast.fix_missing_locations(ast.Module(body=[import_node])), 'import %s' % (import_mod,), 'exec')
@@ -86,10 +102,9 @@ def init_globals(opts):
 	for eval_str in opts.evals:
 		try:
 			exec eval_str in globs
-			#eval(eval_str, globs)
-			print(repr(globs.keys()))
 		except SyntaxError as e:
 			raise Exit("got error: %s\nwhile evaluating: %s" % (e,eval_str))
+	globs['f'] = [make_stream(open(f)) for f in opts.files]
 	return globs
 
 
@@ -156,21 +171,22 @@ def detect_mode(expr):
 	NameFinder().visit(expr)
 	important_vars = set(['pp', 'p'])
 	debug('expr references: %r' % (names,))
-	found_vars = important_vars.intersection(names)
-	if len(found_vars) > 1:
-		raise RuntimeError("ambiguous expression uses too many variables!")
+	#found_vars = important_vars.intersection(names)
+	#if len(found_vars) > 1:
+	#	raise RuntimeError("ambiguous expression uses too many variables!")
 
 	mode = MODE.LINE
-	if 'pp' in found_vars:
+	if 'pp' in names:
 		mode = MODE.GLOBAL
 	return mode, names
 
 def eval_pipes(exprs, bindings):
 	pp = bindings['pp']
 	for expr in exprs:
-		if not isinstance(pp, LazyList):
+		if not isinstance(pp, BaseList):
 			# if the last expr turned pp into a normal list or some other iterable, fix that...
-			pp = LazyList(iter(pp))
+			cls = List if isinstance(pp, (list, tuple)) else Stream
+			pp = cls(iter(pp))
 		bindings['pp'] = pp
 		mode, vars = detect_mode(expr)
 		if mode == MODE.LINE:

@@ -1,9 +1,13 @@
 import os
 def wrap(fn):
-	return lambda *a, **k: Line(fn(*a, **k))
+	ret = lambda *a, **k: Line(fn(*a, **k))
+	ret.__name__ = fn.__name__
+	return ret
 
 def wrap_multi(fn):
-	return lambda *a, **k: [Line(l) for l in fn(*a, **k)]
+	ret = lambda *a, **k: [Line(l) for l in fn(*a, **k)]
+	ret.__name__ = fn.__name__
+	return ret
 
 def passthru(fn):
 	return lambda *a, **k: fn(*a, **k)
@@ -40,8 +44,10 @@ class Line(str):
 	splitslash = wrap_multi(lambda s: s.split('/'))
 	splitpath = wrap_multi(lambda s: s.split(os.path.sep))
 
-	def __str__(self):
-		return self
+	@wrap_multi
+	def shellsplit(self):
+		import shlex
+		return shlex.split(self)
 
 	# copy all `str` builtins
 	capitalize = wrap(str.capitalize)
@@ -70,8 +76,6 @@ class Line(str):
 
 	# and specials:
 	__add__      = wrap(str.__add__)
-	# coerce EVERYTHING into a string
-
 	__format__   = wrap(str.__format__)
 	__getitem__  = wrap(str.__getitem__)
 	__mod__      = wrap(str.__mod__)

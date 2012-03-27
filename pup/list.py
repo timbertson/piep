@@ -1,34 +1,106 @@
 #!/usr/bin/env python
 
 from itertools import *
-class LazyList(object):
+from pup import shell
+
+class BaseList(object):
+	def divide(self, pred, keep_header=True):
+		def it(src):
+			group = []
+			for item in src:
+				if pred(item):
+					if group:
+						yield List(group)
+					group = []
+					if keep_header:
+						group.append(item)
+				else:
+					group.append(item)
+			if group:
+				yield List(group)
+		return self._replace(it(self.src))
+
+	def map(self, fn):
+		"""
+		>>> list(Stream(iter([1,2,3,4])).map(lambda x: x % 2 == 0))
+		[None, 2, None, 4]
+		>>> list(Stream(iter([1,2,3,4])).map(lambda x: x + 1))
+		[2, 3, 4, 5]
+		"""
+		def _transform(line):
+			result = fn(line)
+			shell.check_for_failed_commands()
+			if isinstance(result, bool):
+				return line if result else None
+			return result
+		return self._replace(ifilter(lambda x: x is not None, imap(_transform, self.src)))
+
+	def zip(self, *others):
+		return self._replace(izip_longest(self.src, *others))
+
+	def zip_shortest(self, *others):
+		return self._replace(izip(self.src, *others))
+
+	def map_index(self, fn):
+		i = [0]
+		def _call(line):
+			try:
+				return fn(line, i[0])
+			finally:
+				i[0] += 1
+		return self.map(_call)
+
+	def filter(self, f=None):
+		return self._replace(ifilter(f, self.src))
+
+	def join(self, s):
+		return type(self)([s.join(list(self))])
+
+	def flatten(self):
+		return self._replace(chain.from_iterable(self.src))
+
+	def sort(self):
+		return self._replace(sorted(self))
+
+	def reverse(self):
+		return self._replace(reversed(self))
+
+
+class List(list, BaseList):
+	def __init__(self, *a, **k):
+		super(List, self).__init__(*a,**k)
+		self.src = self
+	
+	def _replace(self, src):
+		return List(src)
+	
+	len = list.__len__
+
+class Stream(BaseList):
 	def __init__(self, src):
 		self.src = iter(src)
 	
-	def _replace(self, src):
-		self.src = src
-	
 	def __getitem__(self, n):
 		"""
-		>>> LazyList([1,2,3,4,5,6,7])[2]
+		>>> Stream([1,2,3,4,5,6,7])[2]
 		3
-		>>> LazyList([1,2,3,4,5,6,7])[-2]
+		>>> Stream([1,2,3,4,5,6,7])[-2]
 		6
-		>>> list(LazyList([1,2,3,4,5,6,7])[3:5])
+		>>> list(Stream([1,2,3,4,5,6,7])[3:5])
 		[4, 5]
-		>>> list(LazyList([1,2,3,4,5,6,7])[3:-2])
+		>>> list(Stream([1,2,3,4,5,6,7])[3:-2])
 		[4, 5]
-		>>> list(LazyList([1,2,3,4,5,6,7])[:-2])
+		>>> list(Stream([1,2,3,4,5,6,7])[:-2])
 		[1, 2, 3, 4, 5]
-		>>> list(LazyList([1,2,3,4,5,6,7])[-2:])
+		>>> list(Stream([1,2,3,4,5,6,7])[-2:])
 		[6, 7]
-		>>> list(LazyList([1,2,3,4,5,6,7])[-4:-5])
+		>>> list(Stream([1,2,3,4,5,6,7])[-4:-5])
 		[]
-		>>> list(LazyList([1,2,3,4,5,6,7])[-4:-2])
+		>>> list(Stream([1,2,3,4,5,6,7])[-4:-2])
 		[4, 5]
-		>>> list(LazyList([1,2])[-4:])
+		>>> list(Stream([1,2])[-4:])
 		[1, 2]
-		>>> list(LazyList([1])[:2])
+		>>> list(Stream([1])[:2])
 		[1]
 		"""
 		if isinstance(n, slice):
@@ -42,6 +114,10 @@ class LazyList(object):
 		except StopIteration:
 			raise IndexError(n)
 
+	def _replace(self, src):
+		self.src = iter(src)
+		return self
+	
 	# unfortunately, list(item) will call __len__
 	# and therefore drain the iter if it's defined
 	# (so we just have a `.length` method instead)
@@ -89,14 +165,14 @@ class LazyList(object):
 				# get the padded end
 				padded = pad_end(abs(stop), self.src)
 				if start >= stop:
-					self._replace(iter([]))
+					self._replace([])
 				else:
 					start -= stop
-					self._replace(iter(pad_end(abs(start), padded).end))
+					self._replace(pad_end(abs(start), padded).end)
 					self.debug()
 
 			elif stop is None:
-				self._replace(iter(pad_end(abs(start), self.src).end))
+				self._replace(pad_end(abs(start), self.src).end)
 
 			else: # stop is positive, e.g lst[-3,2]
 				try:
@@ -105,10 +181,10 @@ class LazyList(object):
 					if num_remaining > abs(start):
 						raise StopIteration() # not really, but the slice will be empty
 				except StopIteration:
-					self._replace(iter([]))
+					self._replace([])
 				else:
 					start += num_remaining # we already "chopped" num_remaining off the end of the original sequence
-					self._replace(iter(first_half[start:]))
+					self._replace(first_half[start:])
 				self.debug()
 
 		# implement stepping as a post-filter once we've organised the slice
@@ -118,62 +194,20 @@ class LazyList(object):
 		return self
 	
 	def __reversed__(self):
-		self._replace(iter(reversed(list(self.src))))
-		return self
+		rev = reversed(list(self.src))
+		self._replace(rev)
+		return List(rev)
 
 	def __iter__(self):
 		return self.src
 
-	def map(self, fn):
-		"""
-		>>> list(LazyList(iter([1,2,3,4])).map(lambda x: x % 2 == 0))
-		[None, 2, None, 4]
-		>>> list(LazyList(iter([1,2,3,4])).map(lambda x: x + 1))
-		[2, 3, 4, 5]
-		"""
-		def _transform(line):
-			result = fn(line)
-			if isinstance(result, bool):
-				return line if result else None
-			return result
-		self._replace(ifilter(lambda x: x is not None, imap(_transform, self.src)))
-		return self
-
-	def map_index(self, fn):
-		i = [0]
-		def _call(line):
-			try:
-				return fn(line, i[0])
-			finally:
-				i[0] += 1
-		return self.map(_call)
-
-	def filter(self, f=None):
-		self._replace(ifilter(f, self.src))
-		return self
-
-	def join(self, s):
-		return LazyList([s.join(list(self))])
-
-	def flatten(self):
-		self._replace(chain.from_iterable(self.src))
-		return self
-
-	def sort(self):
-		self._replace(iter(sorted(self)))
-		return self
-
-	def reverse(self):
-		self._replace(iter(reversed(self)))
-		return self
-
 	def __nonzero__(self):
 		"""
-		>>> bool(LazyList([1,2,3]))
+		>>> bool(Stream([1,2,3]))
 		True
-		>>> bool(LazyList([]))
+		>>> bool(Stream([]))
 		False
-		>>> bool(LazyList(repeat(1)))
+		>>> bool(Stream(repeat(1)))
 		True
 		"""
 		a,b = tee(self.src)

@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import sys
+import tempfile
 from unittest import TestCase
 import itertools
 from test.test_helper import run
@@ -36,7 +37,7 @@ class MultipleOpTest(TestCase):
 			run('pp[:5] | "hello", p | pp[-2:]', [1, 2, 3, 4, 5, 6, 7, 8, 9. ,10]),
 			['hello 4', 'hello 5'])
 
-class LazyListFunctions(TestCase):
+class StreamFunctions(TestCase):
 	def test_flatten(self):
 		self.assertEqual(
 			run('p.split(".") | pp.flatten() | p + "!"', ['1.2.3', '4.5.6']),
@@ -45,4 +46,59 @@ class LazyListFunctions(TestCase):
 		self.assertEqual(
 			run('pp.reverse()', ['1', '2']),
 			['2','1'])
+	
+	def test_chunk_on_predicate(self):
+		self.assertEqual(
+			run('pp.divide(lambda p: "---" in p) | ".".join(p)',
+				[
+					'leading',
+					'----',
+					'chunk 1 line 1',
+					'chunk 1 line 2',
+					'----',
+					'chunk 2 line 1',
+					'chunk 2 line 2',
+					'---',
+					]),
+			['leading',
+			'----.chunk 1 line 1.chunk 1 line 2',
+			'----.chunk 2 line 1.chunk 2 line 2',
+			'---']
+			)
+
+	def test_chunk_returns_enhanced_list(self):
+		self.assertEqual(
+			run('pp.divide(lambda p: "---" in p, keep_header=False) | p.len()',
+				[
+					'leading',
+					'----',
+					'chunk 1 line 1',
+					'chunk 1 line 2',
+					'----',
+					'chunk 2 line 1',
+					'chunk 2 line 2',
+					'---',
+					]),
+			['1', '2', '2'])
+
+class TestMultipleFileInput(TestCase):
+	def test_a_pair_of_files(self):
+		with tempfile.NamedTemporaryFile() as f:
+			f.write('a\nb\nc\n')
+			f.seek(0)
+
+			self.assertEqual(
+					run('--join=-',
+						'--file=' + f.name, 'pp.zip(f[0]) | p[0] or "", p[1].upper()', ['1']),
+					['1-A','-B','-C'])
+
+	def test_zip_shortest(self):
+		with tempfile.NamedTemporaryFile() as f:
+			f.write('a\nb\nc\n')
+			f.seek(0)
+
+			self.assertEqual(
+					run('--join=-',
+						'--file=' + f.name, 'pp.zip_shortest(f[0]) | p[0], p[1].upper()', ['1']),
+					['1-A'])
 

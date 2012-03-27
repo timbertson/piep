@@ -1,0 +1,2 @@
+class Exit(BaseException): pass
+
