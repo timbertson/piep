@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <?xml-stylesheet type='text/xsl' href='interface.xsl'?>
-<interface uri="http://gfxmonk.net/dist/0install/python-linewise.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
-	<name>python-linewise</name>
+<interface uri="http://gfxmonk.net/dist/0install/piep.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+	<name>piep</name>
 	<summary>unix-style stream manipulation with python's syntax</summary>
 	<publish mode="featured" xmlns="http://gfxmonk.net/dist/0install"/>
 	<description>
@@ -20,6 +20,8 @@
 		<command name="test">
 			<runner interface="http://gfxmonk.net/dist/0install/nosetests-runner.xml" command="run-py2"/>
 			<arg>--with-doctest</arg>
+			<arg>--exe</arg>
+			<arg>-v</arg>
 		</command>
 
 		<environment name="PYTHONPATH" insert="" mode="prepend" />

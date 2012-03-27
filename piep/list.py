@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from itertools import *
 from piep import shell
 
@@ -23,7 +21,7 @@ class BaseList(object):
 	def map(self, fn):
 		"""
 		>>> list(Stream(iter([1,2,3,4])).map(lambda x: x % 2 == 0))
-		[None, 2, None, 4]
+		[2, 4]
 		>>> list(Stream(iter([1,2,3,4])).map(lambda x: x + 1))
 		[2, 3, 4, 5]
 		"""
@@ -340,7 +338,3 @@ def take(n, it, stop_short=False):
 			return results
 		raise
 
-
-if __name__ == '__main__':
-	import doctest
-	doctest.testmod()
