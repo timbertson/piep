@@ -1,6 +1,7 @@
 from __future__ import print_function
 import __builtin__
 import subprocess
+import re, os, sys
 
 from pup.list import iter_length
 from pup import line
@@ -39,3 +40,7 @@ def shellsplit(s):
 	import shlex
 	return shlex.split(s)
 
+add_builtin(re, 're')
+add_builtin(os, 'os')
+add_builtin(os.path, 'path')
+add_builtin(sys, 'sys')
