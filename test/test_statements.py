@@ -19,7 +19,14 @@ class TestEval(TestCase):
 
 class TestHistory(TestCase):
 	def test_restoring_previous_results(self):
-		self.skipTest("pending")
 		self.assertEqual(
-				run('p0 = p | p.extonly() | p, "is a", p0', ['a.py','b.jpg']),
+				run('p0 = p | p.extonly() | p0, "is a", p', ['a.py','b.jpg']),
 				['a.py is a py', 'b.jpg is a jpg'])
+	
+	def test_aliases_dont_affect_future_p_values(self):
+		self.assertEqual(
+			run('--join=.', 'ext = p.extonly() | p.upper() | p.stripext() | p, ext', ['a.py','b.py']),
+			['A.py', 'B.py'])
+	
+	def test_cant_modify_pp_and_maintain_history(self):
+		self.assertRaises(NameError, lambda: run('p0=p | pp | p0,p', ['a']))

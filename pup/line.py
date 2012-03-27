@@ -36,7 +36,7 @@ class Line(str):
 	dirname = wrap(os.path.dirname)
 	basename = wrap(os.path.basename)
 	filename = basename
-	trimext = wrap(lambda s: os.path.splitext(s)[0])
+	stripext = wrap(lambda s: os.path.splitext(s)[0])
 	splitline = wrap_multi(str.splitlines)
 	splittab = wrap_multi(lambda s: s.split('\t'))
 	splitcomma = wrap_multi(lambda s: s.split(','))

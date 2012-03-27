@@ -69,7 +69,16 @@ def run(argv=None):
 		try:
 			return ast.parse(cmd.strip() + '\n', mode='eval').body
 		except SyntaxError as e:
-			raise Exit("got error: %s\nwhile evaluating: %s" % (e,expr))
+			try:
+				stmt = ast.parse(cmd.strip() + '\n', mode='exec').body
+				if len(stmt) == 1 and isinstance(stmt[0], ast.Assign):
+					# single assignments are OK
+					return stmt[0]
+				else:
+					raise e
+			except SyntaxError as e:
+				raise Exit("got error: %s\nwhile evaluating: %s" % (e,expr))
+
 	piped_exprs = [compile_expr(cmd) for cmd in exprs]
 	output = eval_pipes(piped_exprs, bindings)
 
@@ -180,29 +189,90 @@ def detect_mode(expr):
 		mode = MODE.GLOBAL
 	return mode, names
 
-def eval_pipes(exprs, bindings):
-	pp = bindings['pp']
-	for expr in exprs:
-		if not isinstance(pp, BaseList):
-			# if the last expr turned pp into a normal list or some other iterable, fix that...
-			cls = List if isinstance(pp, (list, tuple)) else Stream
-			pp = cls(iter(pp))
-		bindings['pp'] = pp
+
+
+def compile_pipe_exprs(exprs):
+	body = []
+	def annotate(expr):
 		mode, vars = detect_mode(expr)
-		if mode == MODE.LINE:
-			expr = make_linewise_transform(expr, vars)
+		return expr, mode, vars
 
-		# compile() wants an expr at the top level
-		if not isinstance(expr, ast.Expr):
-			expr = ast.Expression(expr)
+	def name(id, ctx=None):
+		if ctx is None:
+			ctx = ast.Load()
+		return ast.Name(id=id, ctx=ctx)
 
-		# and lots of other stuff
-		ast.fix_missing_locations(expr)
+	def assign(var, expr):
+		return ast.Assign(targets=[name(var, ctx=ast.Store())], value=expr)
 
-		expr = compile(expr, '(input)', 'eval')
-		pp = eval(expr, bindings)
-		debug("after pipe, pp = %r" % (pp,))
-	return pp
+	def combine_pipe_transforms(body):
+		transform_def = ast.FunctionDef(
+			name='_transformer',
+			args=ast.arguments(
+				args=[name('p'), name('i')],
+				vararg=None,
+				kwarg=None,
+				defaults=[]
+			),
+			body=body + [ast.Return(name('p'))],
+			decorator_list=[])
+
+		map_fn = ast.Attribute(value=name('pp'), attr='map_index', ctx=ast.Load())
+		assign_pp = assign('pp', ast.Call(
+				func=map_fn,
+				args=[name('_transformer')],
+				keywords=[],
+				starargs=None,
+				kwargs=None
+				))
+		return [
+			transform_def,
+			assign_pp
+			]
+
+	annotated_exprs = map(annotate, exprs)
+	is_linewise = lambda x: x[1] is MODE.LINE
+
+	def ensure_stream():
+		call = ast.Call(
+			func=name('_ensure_stream'),
+			args=[name('pp')],
+			keywords=[],
+			starargs=None,
+			kwargs=None
+		)
+		body.append(assign('pp', call))
+
+	for linewise, group in itertools.groupby(annotated_exprs, is_linewise):
+		if linewise:
+			group_body = []
+			for item in group:
+				expr, mode, vars = item
+				if not isinstance(expr, ast.Assign):
+					expr = assign('p', expr)
+				group_body.append(expr)
+			ensure_stream()
+			body.extend(combine_pipe_transforms(group_body))
+		else:
+			for item in group:
+				expr = item[0]
+				ensure_stream()
+				body.append(assign('pp', expr))
+	
+	mod = ast.Module(body=body)
+	ast.fix_missing_locations(mod)
+
+	#import codegen
+	#raise RuntimeError(codegen.to_source(mod))
+	#raise RuntimeError(ast.dump(ast.Module(body=body)))
+	return compile(mod, '(input)', 'exec')
+
+def eval_pipes(exprs, bindings):
+	# and lots of other stuff
+	mod = compile_pipe_exprs(exprs)
+	exec mod in bindings
+	debug("after pipe, pp = %r" % (bindings['pp'],))
+	return bindings['pp']
 
 def make_linewise_transform(expr, vars):
 	input_args = [ast.Name(id='p', ctx=ast.Load())]
