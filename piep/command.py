@@ -46,9 +46,9 @@ def run(argv=None):
 	p = OptionParser('usage: %prog [OPTIONS] <expr> [additional_files ...]')
 	p.add_option('--debug', action='store_true')
 	p.add_option('-j', '--join', default=' ')
-	p.add_option('-e', '--eval', action='append', dest='evals', default=[], help='evaluate something before running the script (in global scope, may be given multiple times)')
-	p.add_option('-m', '--import', action='append', dest='imports', default=[], help='add a module to global scope (may be given multiple times)')
-	p.add_option('-f', '--file', action='append', dest='files', default=[], help='add another input file (available as f[n], can be given multiple times)')
+	p.add_option('-e', '--eval', action='append', dest='evals', default=[], metavar='EVAL', help='evaluate arbitrary code before running the script (in global scope, may be given multiple times)')
+	p.add_option('-m', '--import', action='append', dest='imports', default=[], metavar='MODULE', help='add a module to global scope (may be given multiple times)')
+	p.add_option('-f', '--file', action='append', dest='files', default=[], metavar='FILE', help='add another input file (available as f[n])')
 	p.add_option('-i', '--input', dest='input', help='use a named file (instead of stdin)')
 	opts, args = p.parse_args(argv)
 	DEBUG = opts.debug
@@ -193,6 +193,13 @@ def detect_mode(expr):
 
 def compile_pipe_exprs(exprs):
 	body = []
+
+	# this check between each expr doesn't need to be parameterised, so we'll just parse a string
+	filter_unwanted_values = ast.parse(
+			"p = p if _p is True else (None if _p is False else _p)\n"
+			"if p is None: return None\n"
+		).body
+	
 	def annotate(expr):
 		mode, vars = detect_mode(expr)
 		return expr, mode, vars
@@ -249,8 +256,10 @@ def compile_pipe_exprs(exprs):
 			for item in group:
 				expr, mode, vars = item
 				if not isinstance(expr, ast.Assign):
-					expr = assign('p', expr)
-				group_body.append(expr)
+					group_body.append(assign('_p', expr))
+					group_body.extend(filter_unwanted_values)
+				else:
+					group_body.append(expr)
 			ensure_stream()
 			body.extend(combine_pipe_transforms(group_body))
 		else:
@@ -266,7 +275,7 @@ def compile_pipe_exprs(exprs):
 
 	#import codegen
 	#raise RuntimeError(codegen.to_source(mod))
-	#raise RuntimeError(ast.dump(ast.Module(body=body)))
+	#raise RuntimeError(ast.dump(mod))
 	return compile(mod, '(input)', 'exec')
 
 def eval_pipes(exprs, bindings):

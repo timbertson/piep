@@ -20,7 +20,6 @@ class Command(object):
 	
 	def _spawn(self):
 		if self.proc is None:
-			print("executing %r with %r" % (self.cmd, self.kwargs))
 			try:
 				self.proc = subprocess.Popen(self.cmd, **self.kwargs)
 			except OSError, e:

@@ -33,6 +33,11 @@ class TestFilters(TestCase):
 		self.assertEqual(
 				run('p.isdigit()', ['1', '2', 'three']),
 				['1','2'])
+	
+	def test_filter_in_pipeline(self):
+		self.assertEqual(
+				run('p.isdigit() | "Digit:", p', ['1', '2', 'three']),
+				['Digit: 1','Digit: 2'])
 
 	def test_index(self):
 		self.assertEqual(
