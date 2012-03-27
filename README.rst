@@ -4,12 +4,12 @@ piep
 Bringing the power of python to stream editing
 ----------------------------------------------
 
-``piep`` (pronounced "pipe") is a command line utility in the spirit of ``awk``, ``sed``, ``grep``, ``tr``, ``cut``, etc. Those tools work really well, but you have to use them a lot to keep the syntax of each fresh in your head. If you already know python syntax, you should find ``piep`` much more natural to use.
+``piep`` (pronounced "pipe") is a command line utility in the spirit of ``awk``, ``sed``, ``grep``, ``tr``, ``cut``, etc. Those tools work really well, but you have to use them a lot to keep the wildly varying syntax and options for each of them fresh in your head. If you already know python syntax, you should find ``piep`` much more natural to use.
 
 quickstart
 ----------
 
-``piep`` usually takes a single argument, the pipeline. This is a series of python expressions, separated by pipes. The important variables to know about are ``p`` (the current line), ``pp`` (the entire input) and sometimes ``i`` (the index of the current line). Note that the result of each expression is fed to the next in the pipeline.
+``piep`` usually takes a single argument, the pipeline. This is a series of python expressions, separated by pipes. The important variables to know about are ``p`` (the current line), ``pp`` (the entire input) and sometimes ``i`` (the index of the current line). The result of each expression becomes ``p`` in the next part of the pipeline.
 
 The pipeline is run over the program's input (``stdin``, or the file provided with ``-i``/``--input``).
 
@@ -81,6 +81,13 @@ Or by coercing it to a boolean (it is assumed that if you use a command as a boo
 
 If you absolutely must use shell syntax, you can pass the keyword argument ``shell=True``. But the author strongly advises against this.
 
+utility methods
+---------------
+
+There are three places where utility methods live in piep: globals, line methods (methods of ``p``) and stream methods (methods of ``pp``):
+
+##TODO: document util methods
+
 re-aligning input
 -----------------
 When an expression based on one input line generates multiple lines (or a sequence), future expressions will use that multi-line string or sequence as the new value of ``p``. If you want to roll up a *sequence* back into ``pp``, use ``pp.merge()``. To flatten a multi-line string, use ``pp.flatten()``.
@@ -144,3 +151,10 @@ extensibility
 -------------
 
 ``piep`` is extensible - it's just python. You can use the ``-m``/``--import`` flag to make modules available, or pass more complicated expressions to ``--eval``. Future work will allow you to write simple plugins that extend ``piep``.
+
+thanks
+------
+
+``piep`` was inspired by (and took a little code from) pyp_. Originally it started as an experiment to add proper (lazy) stream-based editing, and grew from there.
+
+.. _pyp: http://code.google.com/p/pyp/
