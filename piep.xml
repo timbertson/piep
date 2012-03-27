@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
+<interface uri="http://gfxmonk.net/dist/0install/python-linewise.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+	<name>python-linewise</name>
+	<summary>unix-style stream manipulation with python's syntax</summary>
+	<publish mode="featured" xmlns="http://gfxmonk.net/dist/0install"/>
+	<description>
+	___
+	</description>
+	<homepage>___</homepage>
+
+	<group main="piep/command.py">
+		<command name="run" path="piep/command.py">
+			<runner interface="http://repo.roscidus.com/python/python"/>
+		</command>
+		<requires interface="http://repo.roscidus.com/python/python">
+			<!-- <version not-before="3"/> -->
+			<version before="3"/>
+		</requires>
+		<command name="test">
+			<runner interface="http://gfxmonk.net/dist/0install/nosetests-runner.xml" command="run-py2"/>
+			<arg>--with-doctest</arg>
+		</command>
+
+		<environment name="PYTHONPATH" insert="" mode="prepend" />
+
+		<implementation id="." version="0.0.1">
+		</implementation>
+	</group>
+</interface>

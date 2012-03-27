@@ -1,8 +1,8 @@
-test: pup-local.xml
-	0launch --command=test2 pup.xml -v
+test: piep-local.xml
+	0launch --command=test piep.xml -v
 
-pup-local.xml: pup.xml
-	0launch http://gfxmonk.net/dist/0install/0local.xml pup.xml
+piep-local.xml: piep.xml
+	0launch http://gfxmonk.net/dist/0install/0local.xml piep.xml
 
 
 .PHONY: test

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from itertools import *
-from pup import shell
+from piep import shell
 
 class BaseList(object):
 	def divide(self, pred, keep_header=True):

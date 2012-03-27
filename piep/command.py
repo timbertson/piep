@@ -6,10 +6,10 @@ import ast
 from optparse import OptionParser
 import itertools
 
-from pup.list import Stream, BaseList, List
-from pup.line import Line
-from pup.builtins import builtins
-from pup.error import Exit
+from piep.list import Stream, BaseList, List
+from piep.line import Line
+from piep.builtins import builtins
+from piep.error import Exit
 
 if sys.version_info < (3,):
 	imap = itertools.imap
@@ -257,7 +257,9 @@ def compile_pipe_exprs(exprs):
 			for item in group:
 				expr = item[0]
 				ensure_stream()
-				body.append(assign('pp', expr))
+				if not isinstance(expr, ast.Assign):
+					expr = assign('pp', expr)
+				body.append(expr)
 	
 	mod = ast.Module(body=body)
 	ast.fix_missing_locations(mod)

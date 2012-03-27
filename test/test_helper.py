@@ -1,7 +1,7 @@
 import sys
 import itertools
 
-from pup import command
+from piep import command
 
 def run(*args):
 	args = list(args)

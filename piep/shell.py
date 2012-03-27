@@ -1,6 +1,6 @@
 from __future__ import print_function
 import subprocess
-from pup.error import Exit
+from piep.error import Exit
 
 active_commands = []
 class Command(object):

@@ -3,14 +3,14 @@ import __builtin__
 import subprocess
 import re, os, sys
 
-from pup.list import iter_length, BaseList, List, Stream
-from pup import line
+from piep.list import iter_length, BaseList, List, Stream
+from piep import line
 builtins = {}
 
 def add_builtin(fn, name=None):
 	name = name or fn.__name__
 	if name in builtins:
-		warn('overriding pup_builtin %r' % (name,))
+		warn('overriding piep_builtin %r' % (name,))
 	builtins[name] = fn
 	return fn
 
@@ -31,7 +31,7 @@ def str(obj):
 
 @add_builtin
 def sh(*args, **kwargs):
-	from pup.shell import Command
+	from piep.shell import Command
 	return Command(args, **kwargs)
 
 @add_builtin
