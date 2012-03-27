@@ -46,13 +46,21 @@ class TestFilters(TestCase):
 
 class TestLineFunctions(TestCase):
 	def test_path_functions(self):
-		self.assertEqual(run('p.dirname()', ['a/b/c.py']), ['a/b'])
-		self.assertEqual(run('p.ext()', ['a/b/c.py', 'foo']), ['.py', ''])
-		self.assertEqual(run('p.extonly()', ['a/b/c.py', 'foo']), ['py'])
-		self.assertEqual(run('p.splitext()', ['a/b/c.py']), ['a/b/c .py'])
+		self.assertEqual(run('p.dirname()'  ,  ['a/b/c.py'])       ,  ['a/b'])
+		self.assertEqual(run('p.ext()'      ,  ['a/b/c.py','foo']) ,  ['.py',''])
+		self.assertEqual(run('p.extonly()'  ,  ['a/b/c.py','foo']) ,  ['py'])
+		self.assertEqual(run('p.splitext()' ,  ['a/b/c.py'])       ,  ['a/b/c .py'])
 	
 	def test_multiple_path_functions(self):
-		self.assertEqual(run('p.upper().ext()', ['a.py']), ['.PY'])
-		self.assertEqual(run('p.filename().splitext() | "_".join(p)', ['a/b/c.py']), ['c_.py'])
+		self.assertEqual(run('p.upper().ext()'                       ,  ['a.py'])     ,  ['.PY'])
+		self.assertEqual(run('p.filename().splitext() | "_".join(p)' ,  ['a/b/c.py']) ,  ['c_.py'])
+
+	def test_regex_functions(self):
+		self.assertEqual(run('p.splitre(" +")'            ,  ['a b   c'])         ,  ['a b c'])
+		self.assertEqual(run('p.match("b..")'             ,  ['a beef c'])        ,  ['bee'])
+		self.assertEqual(run('p.match("b(..)",1)'         ,  ['a beef c'])        ,  ['ee'])
+		self.assertEqual(run('p.match("b(?P<m>..)?","m")' ,  ['a beef c'])        ,  ['ee'])
+		self.assertEqual(run('p.match("b(?P<m>..)?","m")' ,  ['a b'])             ,  [])
+		self.assertEqual(run('p.matches("b..")'           ,  ['a bee c', 'nope']) ,  ['beef c'])
 
 

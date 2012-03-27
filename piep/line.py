@@ -1,4 +1,6 @@
 import os
+import re
+
 def wrap(fn):
 	ret = lambda *a, **k: Line(fn(*a, **k))
 	ret.__name__ = fn.__name__
@@ -48,6 +50,18 @@ class Line(str):
 	def shellsplit(self):
 		import shlex
 		return shlex.split(self)
+
+	@wrap_multi
+	def splitre(self, regex, *a, **kw):
+		return re.split(regex, self, *a, **kw)
+
+	@wrap
+	def match(self, pattern, group=0, flags=0):
+		res = re.search(pattern, self, flags=flags)
+		return res and res.group(group or 0)
+
+	def matches(self, pattern, group=0, flags=0):
+		return bool(re.search(pattern, self, flags=flags))
 
 	# copy all `str` builtins
 	capitalize = wrap(str.capitalize)
