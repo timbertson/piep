@@ -39,6 +39,9 @@ class TestShellCommands(TestCase):
 
 	def test_shell_in_pipes(self):
 		self.assertEqual(run('sh("echo", p) | "%s) %s" % (i, p)', ['a']), ['0) a'])
+	
+	def test_concat(self):
+		self.assertEqual(run('sh("echo", p) + p', ['a']), ['aa'])
 
 	def test_shell_failure_in_pipes(self):
 		self.assertRaises(subprocess.CalledProcessError, lambda: run('sh("false") | "%s) %s" % (i, p)', ['a']))

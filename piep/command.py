@@ -37,7 +37,7 @@ def main(argv=None):
 		if DEBUG:
 			import traceback
 			traceback.print_exc(file=sys.stderr)
-		print(e.message, file=sys.stderr)
+		print(str(e), file=sys.stderr)
 		sys.exit(1)
 
 def run(argv=None):

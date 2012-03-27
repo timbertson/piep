@@ -1,5 +1,6 @@
 from itertools import *
 from piep import shell
+from piep.line import Line
 
 class BaseList(object):
 	def divide(self, pred, keep_header=True):
@@ -54,8 +55,11 @@ class BaseList(object):
 	def join(self, s):
 		return type(self)([s.join(list(self))])
 
-	def flatten(self):
+	def merge(self):
 		return self._replace(chain.from_iterable(self.src))
+
+	def flatten(self):
+		return self._replace(chain.from_iterable(imap(lambda x: Line(x).splitlines(), self.src)))
 
 	def sort(self):
 		return self._replace(sorted(self))

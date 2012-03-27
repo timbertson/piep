@@ -38,9 +38,9 @@ class MultipleOpTest(TestCase):
 			['hello 4', 'hello 5'])
 
 class StreamFunctions(TestCase):
-	def test_flatten(self):
+	def test_merge(self):
 		self.assertEqual(
-			run('p.split(".") | pp.flatten() | p + "!"', ['1.2.3', '4.5.6']),
+			run('p.split(".") | pp.merge() | p + "!"', ['1.2.3', '4.5.6']),
 			['1!', '2!', '3!', '4!', '5!', '6!'])
 	def test_reversed(self):
 		self.assertEqual(
@@ -80,6 +80,17 @@ class StreamFunctions(TestCase):
 					'---',
 					]),
 			['1', '2', '2'])
+	
+	def test_reprocess_multi_line_elements(self):
+		self.assertEqual(
+			run('p + "\\n" + p | pp.flatten()', ['a','b','c']),
+			['a','a','b','b','c','c'])
+
+	def test_reprocess_sequence_elements(self):
+		self.assertEqual(
+			run('[p,p] | pp.merge()', ['a','b','c']),
+			['a','a','b','b','c','c'])
+
 
 class TestMultipleFileInput(TestCase):
 	def test_a_pair_of_files(self):

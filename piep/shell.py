@@ -32,8 +32,8 @@ class Command(object):
 		self.ended = True
 		self.status = self.proc.returncode
 		self.succeeded = self.status == 0
-		if raise_on_error and self.raise_on_error and not self.succeeded != 0:
-			raise subprocess.CalledProcessError(self.status, repr(list(self.cmd)))
+		if raise_on_error and self.raise_on_error and not self.succeeded:
+			raise subprocess.CalledProcessError(self.status, ' '.join(self.cmd))
 	
 	def __nonzero__(self):
 		self.wait(raise_on_error = False)
@@ -44,6 +44,11 @@ class Command(object):
 			self.wait()
 		return self.stdout.rstrip('\n\r')
 	__repr__ = __str__
+	str = property(__str__)
+	def __add__(self, other):
+		return str(self) + other
+	def __radd__(self, other):
+		return other + str(self)
 	
 def check_for_failed_commands():
 	global active_commands
