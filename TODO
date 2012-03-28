@@ -1,0 +1,7 @@
+Planned features:
+
+- python 3 support (should it be the _only_ supported environment?)
+
+- ability to write / load extensions. Most likely using
+  http://gfxmonk.net/dist/0install/python-env-importer.xml
+  and a very simple API for adding to builtins / p / pp
