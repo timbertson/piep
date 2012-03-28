@@ -11,7 +11,7 @@ doc: piep-local.xml
 		. doc/build
 
 copy: doc
-		rsync -avz --delete doc/build/html/ ~/Sites/gfxmonk/dist/doc/piep/
+		rsync -avz --delete doc/build/ ~/Sites/gfxmonk/dist/doc/piep/
 
 clean:
 	git clean -fdx

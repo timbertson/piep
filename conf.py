@@ -1,4 +1,4 @@
 extensions = ['sphinx.ext.autodoc']
-master_doc='doc/index'
+master_doc='index'
 project='piep'
 exclude_trees=['README.rst']
