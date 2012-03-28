@@ -10,4 +10,13 @@ doc: piep-local.xml
 		-D release=`cat VERSION` \
 		. doc/build
 
-.PHONY: test doc
+copy: doc
+		rsync -avz --delete doc/build/html/ ~/Sites/gfxmonk/dist/doc/piep/
+
+clean:
+	git clean -fdx
+
+0:
+	mkzero-gfxmonk -p piep -p setup.py piep.xml
+
+.PHONY: test doc copy clean

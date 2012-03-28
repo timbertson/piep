@@ -43,17 +43,17 @@ def main(argv=None):
 def run(argv=None):
 	global DEBUG
 	if argv is None: argv = sys.argv[1:]
-	p = OptionParser('usage: %prog [OPTIONS] <expr> [additional_files ...]')
+	p = OptionParser('usage: piep [OPTIONS] PIPELINE')
 	p.add_option('--debug', action='store_true')
 	p.add_option('-j', '--join', default=' ')
 	p.add_option('-e', '--eval', action='append', dest='evals', default=[], metavar='EVAL', help='evaluate arbitrary code before running the script (in global scope, may be given multiple times)')
 	p.add_option('-m', '--import', action='append', dest='imports', default=[], metavar='MODULE', help='add a module to global scope (may be given multiple times)')
-	p.add_option('-f', '--file', action='append', dest='files', default=[], metavar='FILE', help='add another input file (available as f[n])')
+	p.add_option('-f', '--file', action='append', dest='files', default=[], metavar='FILE', help='add another input stream (available as f[n])')
 	p.add_option('-i', '--input', dest='input', help='use a named file (instead of stdin)')
 	opts, args = p.parse_args(argv)
 	DEBUG = opts.debug
 
-	assert len(args) == 1, "Please provide exactly one argument"
+	assert len(args) == 1, p.format_help()
 	cmd = args[0]
 	input_file = open(opts.input) if opts.input else sys.stdin
 
@@ -179,9 +179,6 @@ def detect_mode(expr):
 	NameFinder().visit(expr)
 	important_vars = set(['pp', 'p'])
 	debug('expr references: %r' % (names,))
-	#found_vars = important_vars.intersection(names)
-	#if len(found_vars) > 1:
-	#	raise RuntimeError("ambiguous expression uses too many variables!")
 
 	mode = MODE.LINE
 	if 'pp' in names:
@@ -193,7 +190,7 @@ def detect_mode(expr):
 def compile_pipe_exprs(exprs):
 	body = []
 
-	# this check between each expr doesn't need to be parameterised, so we'll just parse a string
+	# this code doesn't need to be parameterised, so we'll just parse a string
 	post_pipe_check = ast.parse(
 			"_check_for_failed_commands()\n"
 		).body
@@ -203,6 +200,7 @@ def compile_pipe_exprs(exprs):
 		).body
 	
 	def annotate(expr):
+		'''get the mode & referenced variables for a given ast node'''
 		mode, vars = detect_mode(expr)
 		return expr, mode, vars
 
@@ -215,6 +213,12 @@ def compile_pipe_exprs(exprs):
 		return ast.Assign(targets=[name(var, ctx=ast.Store())], value=expr)
 
 	def combine_pipe_transforms(body):
+		'''
+		Takes a list of expressions and creates a list of statements
+		to process the entirety of ``pp`` with the given sub-pipeline.
+		Importantly, the expressions exist in the same lexical scope, so
+		assignments are available for use in subsequent expressions.
+		'''
 		transform_def = ast.FunctionDef(
 			name='_transformer',
 			args=ast.arguments(
@@ -276,44 +280,13 @@ def compile_pipe_exprs(exprs):
 	mod = ast.Module(body=body)
 	ast.fix_missing_locations(mod)
 
-	#import codegen
-	#raise RuntimeError(codegen.to_source(mod))
-	#raise RuntimeError(ast.dump(mod))
 	return compile(mod, '(input)', 'exec')
 
 def eval_pipes(exprs, bindings):
-	# and lots of other stuff
 	mod = compile_pipe_exprs(exprs)
 	exec mod in bindings
 	debug("after pipe, pp = %r" % (bindings['pp'],))
 	return bindings['pp']
-
-def make_linewise_transform(expr, vars):
-	input_args = [ast.Name(id='p', ctx=ast.Load())]
-	method_name = 'map'
-	debug("making linewise expr that uses the following vars: %r" % (vars,))
-
-	if 'i' in vars:
-		input_args.append(ast.Name(id='i', ctx=ast.Load()))
-		method_name = 'map_index'
-
-	transformer = ast.Lambda(
-		args=ast.arguments(
-			args=input_args,
-			vararg=None,
-			kwarg=None,
-			defaults=[]
-		),
-		body=expr)
-	map_fn = ast.Attribute(value=ast.Name(id='pp', ctx=ast.Load()), attr=method_name, ctx=ast.Load())
-	mapping = ast.Call(
-			func=map_fn,
-			args=[transformer],
-			keywords=[],
-			starargs=None,
-			kwargs=None
-	)
-	return mapping
 
 if __name__ == '__main__':
 	main()
