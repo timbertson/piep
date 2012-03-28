@@ -13,13 +13,13 @@ Bringing the power of python to stream editing
 
 | Zero install feed:
 | http://gfxmonk.net/dist/0install/piep.xml
-
+|
 | Online documentation:
 | http://gfxmonk.net/dist/doc/piep/
-
+|
 | Source Code / Issues:
 | https://github.com/gfxmonk/piep/
-
+|
 | Cheese shop entry:
 | http://pypi.python.org/pypi/piep
 	</description>
@@ -28,10 +28,7 @@ Bringing the power of python to stream editing
 		<div xmlns="http://www.w3.org/1999/xhtml">
 			<h1 id="piep">piep</h1>
 			<h2 id="bringing-the-power-of-python-to-stream-editing">Bringing the power of python to stream editing</h2>
-			<p>Zero install feed:<br/><a href="http://gfxmonk.net/dist/0install/piep.xml">http://gfxmonk.net/dist/0install/piep.xml</a></p>
-			<p>Online documentation:<br/><a href="http://gfxmonk.net/dist/doc/piep/">http://gfxmonk.net/dist/doc/piep/</a></p>
-			<p>Source Code / Issues:<br/><a href="https://github.com/gfxmonk/piep/">https://github.com/gfxmonk/piep/</a></p>
-			<p>Cheese shop entry:<br/><a href="http://pypi.python.org/pypi/piep">http://pypi.python.org/pypi/piep</a></p>
+			<p>| Zero install feed: | <a href="http://gfxmonk.net/dist/0install/piep.xml">http://gfxmonk.net/dist/0install/piep.xml</a> | | Online documentation: | <a href="http://gfxmonk.net/dist/doc/piep/">http://gfxmonk.net/dist/doc/piep/</a> | | Source Code / Issues: | <a href="https://github.com/gfxmonk/piep/">https://github.com/gfxmonk/piep/</a> | | Cheese shop entry: | <a href="http://pypi.python.org/pypi/piep">http://pypi.python.org/pypi/piep</a></p>
 		</div>
 	</rich-description>
 	<group main="piep/command.py">
