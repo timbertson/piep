@@ -1,19 +1,22 @@
 import os
 import re
 
-def wrap(fn):
+def _apply_doc(ret, fn, doc):
+	ret.__name__ = fn.__name__
+	if doc is True:
+		ret.__doc__ = fn.__doc__
+	elif doc is not False:
+		ret.__doc__ = doc
+
+def wrap(fn, doc=False):
 	ret = lambda *a, **k: Line(fn(*a, **k))
-	ret.__name__ = fn.__name__
+	_apply_doc(ret, fn, doc)
 	return ret
 
-def wrap_multi(fn):
+def wrap_multi(fn, doc=False):
 	ret = lambda *a, **k: [Line(l) for l in fn(*a, **k)]
-	ret.__name__ = fn.__name__
+	_apply_doc(ret, fn, doc)
 	return ret
-
-def passthru(fn):
-	return lambda *a, **k: fn(*a, **k)
-
 
 class Line(str):
 	def __new__(cls, s, *a, **k):
@@ -27,40 +30,49 @@ class Line(str):
 
 	@wrap
 	def ext(s):
+		'''Return the filename extension (including ".")'''
 		return os.path.splitext(s)[1]
 
 	@wrap
 	def extonly(s):
+		'''
+		Return the filename extension (without the ".")
+		If there is no file extension, returns ``None``
+		'''
 		ext = os.path.splitext(s)[1]
 		return ext[1:] if ext else None
 
-	splitext = wrap_multi(os.path.splitext)
-	dirname = wrap(os.path.dirname)
-	basename = wrap(os.path.basename)
+	splitext = wrap_multi(os.path.splitext, doc='alias for os.path.splitext(self)')
+	dirname = wrap(os.path.dirname, doc='alias for os.path.dirname(self)')
+	basename = wrap(os.path.basename, doc='alias for os.path.basename(self)')
 	filename = basename
-	stripext = wrap(lambda s: os.path.splitext(s)[0])
-	splitline = wrap_multi(str.splitlines)
-	splittab = wrap_multi(lambda s: s.split('\t'))
-	splitcomma = wrap_multi(lambda s: s.split(','))
-	splitcolon = wrap_multi(lambda s: s.split(':'))
-	splitslash = wrap_multi(lambda s: s.split('/'))
-	splitpath = wrap_multi(lambda s: s.split(os.path.sep))
+	stripext = wrap(lambda s: os.path.splitext(s)[0], doc='remove filetype extension if present, including "."')
+	splitline = wrap_multi(str.splitlines, doc='alias for str.splitlines()')
+	splittab = wrap_multi(lambda s: s.split('\t'), doc='split on "\\t"')
+	splitcomma = wrap_multi(lambda s: s.split(','), doc='split on ","')
+	splitcolon = wrap_multi(lambda s: s.split(':'), doc='split on ":"')
+	splitslash = wrap_multi(lambda s: s.split('/'), doc='split on "/"')
+	splitpath = wrap_multi(lambda s: s.split(os.path.sep), doc='split on path separator ("/" for unix, "\\" for windows)')
 
 	@wrap_multi
 	def shellsplit(self):
+		'''shlex.split(self)'''
 		import shlex
 		return shlex.split(self)
 
 	@wrap_multi
 	def splitre(self, regex, *a, **kw):
+		'''re.split(regex, self, *a, **kw)'''
 		return re.split(regex, self, *a, **kw)
 
 	@wrap
 	def match(self, pattern, group=0, flags=0):
+		'''extract matched part of the string (or a captured group, if ``group`` is given)'''
 		res = re.search(pattern, self, flags=flags)
 		return res and res.group(group or 0)
 
 	def matches(self, pattern, group=0, flags=0):
+		'''return True or False depending on if the given regex can be found anywhere in the line'''
 		return bool(re.search(pattern, self, flags=flags))
 
 	# copy all `str` builtins

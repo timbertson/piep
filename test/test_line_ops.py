@@ -61,6 +61,6 @@ class TestLineFunctions(TestCase):
 		self.assertEqual(run('p.match("b(..)",1)'         ,  ['a beef c'])        ,  ['ee'])
 		self.assertEqual(run('p.match("b(?P<m>..)?","m")' ,  ['a beef c'])        ,  ['ee'])
 		self.assertEqual(run('p.match("b(?P<m>..)?","m")' ,  ['a b'])             ,  [])
-		self.assertEqual(run('p.matches("b..")'           ,  ['a bee c', 'nope']) ,  ['beef c'])
+		self.assertEqual(run('p.matches("b..")'           ,  ['a bee c', 'nope']) ,  ['a bee c'])
 
 

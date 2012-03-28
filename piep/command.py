@@ -53,9 +53,8 @@ def run(argv=None):
 	opts, args = p.parse_args(argv)
 	DEBUG = opts.debug
 
-	assert len(args) > 0
+	assert len(args) == 1, "Please provide exactly one argument"
 	cmd = args[0]
-	opts.files += args[1:]
 	input_file = open(opts.input) if opts.input else sys.stdin
 
 	opts.join = opts.join.decode('string_escape')
@@ -195,7 +194,10 @@ def compile_pipe_exprs(exprs):
 	body = []
 
 	# this check between each expr doesn't need to be parameterised, so we'll just parse a string
-	filter_unwanted_values = ast.parse(
+	post_pipe_check = ast.parse(
+			"_check_for_failed_commands()\n"
+		).body
+	post_expr_check = post_pipe_check + ast.parse(
 			"p = p if _p is True else (None if _p is False else _p)\n"
 			"if p is None: return None\n"
 		).body
@@ -257,7 +259,7 @@ def compile_pipe_exprs(exprs):
 				expr, mode, vars = item
 				if not isinstance(expr, ast.Assign):
 					group_body.append(assign('_p', expr))
-					group_body.extend(filter_unwanted_values)
+					group_body.extend(post_expr_check)
 				else:
 					group_body.append(expr)
 			ensure_stream()
@@ -269,6 +271,7 @@ def compile_pipe_exprs(exprs):
 				if not isinstance(expr, ast.Assign):
 					expr = assign('pp', expr)
 				body.append(expr)
+				body.extend(post_pipe_check)
 	
 	mod = ast.Module(body=body)
 	ast.fix_missing_locations(mod)

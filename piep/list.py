@@ -3,7 +3,17 @@ from piep import shell
 from piep.line import Line
 
 class BaseList(object):
+	'''
+	Contains the common methods for :class:`piep.List` and :class:`piep.Stream`
+	'''
 	def divide(self, pred, keep_header=True):
+		'''
+		Divide this stream at lines where ``pred`` returns true.
+		If ``keep_header`` is set to ``False``, lines matching ``pred`` will not
+		be included in the results.
+
+		Each group is returned as a :class:`List` of items.
+		'''
 		def it(src):
 			group = []
 			for item in src:
@@ -20,24 +30,29 @@ class BaseList(object):
 		return self._replace(it(self.src))
 
 	def map(self, fn):
-		"""
-		>>> list(Stream(iter([1,2,3,4])).map(lambda x: x % 2 == 0))
-		[2, 4]
-		>>> list(Stream(iter([1,2,3,4])).map(lambda x: x + 1))
-		[2, 3, 4, 5]
-		"""
 		def _transform(line):
 			result = fn(line)
-			shell.check_for_failed_commands()
 			if isinstance(result, bool):
 				return line if result else None
 			return result
 		return self._replace(ifilter(lambda x: x is not None, imap(_transform, self.src)))
 
 	def zip(self, *others):
+		'''Combine this stream with another, yielding sequentail paris from each stream.
+		When one sequence is shorter than the other, it's padded with ``None`` elements.
+		Basically, ``itertools.izip_longest(self, *others)``
+		
+		>>> list(Stream([1,2,3,4]).zip(['one','two','three']))
+		[(1, 'one'), (2, 'two'), (3, 'three'), (4, None)]
+		'''
 		return self._replace(izip_longest(self.src, *others))
 
 	def zip_shortest(self, *others):
+		'''Like :data:`zip`, but stops once any of the sequences ends.
+		
+		>>> list(Stream([1,2,3,4]).zip_shortest(['one','two','three']))
+		[(1, 'one'), (2, 'two'), (3, 'three')]
+		'''
 		return self._replace(izip(self.src, *others))
 
 	def map_index(self, fn):
@@ -50,21 +65,45 @@ class BaseList(object):
 		return self.map(_call)
 
 	def filter(self, f=None):
+		'''alias for itertools.ifilter(self, f)'''
 		return self._replace(ifilter(f, self.src))
 
 	def join(self, s):
+		'''alias for ``s.join(self)``'''
 		return type(self)([s.join(list(self))])
 
 	def merge(self):
+		'''
+		Combine a sequence of iterables into one sequence.
+		
+		>>> list(Stream([[1],[2,3],[4,5]]).merge())
+		[1, 2, 3, 4, 5]
+		'''
 		return self._replace(chain.from_iterable(self.src))
 
 	def flatten(self):
+		r'''
+		Combine a sequence of strings (containing newlines) into a sequence of lines.
+		
+		>>> list(Stream([[1],[2,3],[4,5]]).merge())
+		[1, 2, 3, 4, 5]
+		>>> list(Stream(["a\nb\nc","d\ne"]).flatten())
+		['a', 'b', 'c', 'd', 'e']
+		'''
 		return self._replace(chain.from_iterable(imap(lambda x: Line(x).splitlines(), self.src)))
 
 	def sort(self):
+		'''
+		Return a sorted version of this stream (note: reads entire stream into memory).
+		Alias for ``sorted(self)``
+		'''
 		return self._replace(sorted(self))
 
 	def reverse(self):
+		'''
+		Return a reversed version of this stream (note: reads entire stream into memory)
+		Alias for ``reversed(self)``
+		'''
 		return self._replace(reversed(self))
 
 

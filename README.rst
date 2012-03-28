@@ -6,8 +6,8 @@ Bringing the power of python to stream editing
 
 ``piep`` (pronounced "pipe") is a command line utility in the spirit of ``awk``, ``sed``, ``grep``, ``tr``, ``cut``, etc. Those tools work really well, but you have to use them a lot to keep the wildly varying syntax and options for each of them fresh in your head. If you already know python syntax, you should find ``piep`` much more natural to use.
 
-quickstart
-----------
+Quickstart
+-----------
 
 ``piep`` usually takes a single argument, the pipeline. This is a series of python expressions, separated by pipes. The important variables to know about are ``p`` (the current line), ``pp`` (the entire input) and sometimes ``i`` (the index of the current line). The result of each expression becomes ``p`` in the next part of the pipeline.
 
@@ -36,10 +36,10 @@ Things to note:
  - if the output of a pipeline is a tuple, it will be joined together and printed. The default join string is " ", but this can be changed with ``--join``.
  - if the result of any linewise expression is a boolean or ``None``, it acts as a filter for that line (like ``grep``)
 
-file-mode expressions
----------------------
+File-mode expressions
+----------------------
 
-Most of the expressions you'll use are linewise (those using only ``p`` and ``i``). If you use ``pp``, the operation happens on the entire stream. Note that the stream is read in lazily, so it should be considered to be an *iterator* rather than a list. However, many list-like operations are supported::
+Most of the expressions you'll use are linewise (those using only ``p`` and ``i``). If you use ``pp``, the operation happens on the entire stream. Note that the stream is read in lazily, so it should be considered to be an *iterator* rather than a list. However, many list-like operations are supported, such as slice syntax::
 
   # `head`
   $ piep 'pp[:10]'
@@ -50,11 +50,14 @@ Most of the expressions you'll use are linewise (those using only ``p`` and ``i`
   # remove leading and trailing lines, then uppercase the rest:
   $ piep 'pp[1:-1] | p.upper()'
 
+Note that even slice operations are as lazy as they can be - if your slice only needs to read the first 10 lines in the input, that's all that will be read. This is extremely useful for testing out commands by limiting them to the first few lines of a big file.
 
-running shell commands
-----------------------
+.. _running shell commands:
 
-``piep`` has a useful way of running commands on your input: the ``sh`` function. It takes multiple arguments, and each becomes a single argument to the underlying command. This means you do *not* need to quote spaces or other special shell metacharacters, so there will be no painful surprises there.
+Running shell commands
+-----------------------
+
+``piep`` has a simple way of running commands on your input: the ``sh`` function. It takes multiple arguments, and each becomes a single argument to the underlying command. This means you do *not* need to quote spaces or other special shell metacharacters, so there will be no painful surprises there.
 
 ::
 
@@ -81,15 +84,34 @@ Or by coercing it to a boolean (it is assumed that if you use a command as a boo
 
 If you absolutely must use shell syntax, you can pass the keyword argument ``shell=True``. But the author strongly advises against this.
 
-utility methods
----------------
+Utility methods
+----------------
 
 There are three places where utility methods live in piep: globals, line methods (methods of ``p``) and stream methods (methods of ``pp``):
 
-##TODO: document util methods
+Methods available on `p` (an input line)
+++++++++++++++++++++++++++++++++++++++++
 
-re-aligning input
------------------
+.. autoclass:: piep.line.Line
+  :members:
+
+Methods available on `pp` (the input stream)
+++++++++++++++++++++++++++++++++++++++++++++
+
+.. autoclass:: piep.list.BaseList
+  :members:
+
+Global functions / variables
+++++++++++++++++++++++++++++
+
+The contents of ``piep.builtins`` is mixed in to the global scope, so all of the following are available unqualified:
+
+.. automodule:: piep.builtins
+  :members:
+
+Re-aligning input
+------------------
+
 When an expression based on one input line generates multiple lines (or a sequence), future expressions will use that multi-line string or sequence as the new value of ``p``. If you want to roll up a *sequence* back into ``pp``, use ``pp.merge()``. To flatten a multi-line string, use ``pp.flatten()``.
 
 Take this example::
@@ -134,12 +156,15 @@ Without the flatten, you would instead see output like::
   ( ... )
 
 
-history / assignments
----------------------
+History / Variable Assignments
+------------------------------
 
 It can be useful to reference an earlier result in the pipeline. The only non-expression allowed is a single assignment, which will capture the value of the line at that point in the pipeline. For example::
 
   $ echo -e "a.py\nb.py\nc.py" | piep 'orig = p | p.extonly() | orig, "is a", p, "file"'
+  a.py is a py file
+  b.py is a py file
+  c.py is a py file
 
 Note that you could accomplish the same by capturing some variant of ``p`` without changing it, like so::
 
@@ -147,13 +172,13 @@ Note that you could accomplish the same by capturing some variant of ``p`` witho
 
 Note that any file-mode expressions (those mentioning ``pp``) will cause previously-bound variables to go out of scope, since it would be very hard to correlate these values (and I don't really see a use for this). Typically, you'll want to modify ``pp`` before you start the line-wise expressions so it shouldn't often be a problem in practice.
 
-extensibility
--------------
+Extensibility
+--------------
 
 ``piep`` is extensible - it's just python. You can use the ``-m``/``--import`` flag to make modules available, or pass more complicated expressions to ``--eval``. Future work will allow you to write simple plugins that extend ``piep``.
 
-thanks
-------
+Thanks
+-------
 
 ``piep`` was inspired by (and took a little code from) pyp_. Originally it started as an experiment to add proper (lazy) stream-based editing, and grew from there.
 
