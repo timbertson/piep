@@ -45,8 +45,9 @@ class Command(object):
 		if not self.checked:
 			self.wait()
 		return self.stdout.rstrip('\n\r')
-	__repr__ = __str__
 	str = property(__str__)
+	def __repr__(self):
+		return repr(str(self))
 	def __add__(self, other):
 		return str(self) + other
 	def __radd__(self, other):
