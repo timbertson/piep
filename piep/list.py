@@ -1,6 +1,7 @@
 from itertools import *
 from piep import shell
 from piep.line import Line
+import operator
 
 class BaseList(object):
 	'''
@@ -36,6 +37,21 @@ class BaseList(object):
 				return line if result else None
 			return result
 		return self._replace(ifilter(lambda x: x is not None, imap(_transform, self.src)))
+
+	def uniq(self, stable=False):
+		'''Remove duplicates. Note: if ``stable`` is not given (or is ``False``),
+		the order of the return value will be in an arbitrary order.
+		If ``stable`` is ``True``, the order will be maintained and only the
+		first occurance of a duplicate line will be kept. This is not the default
+		because it's much slower. For sorted unique output, try ``sort(uniq=True)``'''
+		items = self
+		if stable:
+			# element order preserved
+			seen = {}
+			items = [ seen.setdefault(x,x) for x in items if x not in seen ]
+		else:
+			items = set(items)
+		return List(items)
 
 	def zip(self, *others):
 		'''Combine this stream with another, yielding sequentail paris from each stream.
@@ -92,12 +108,32 @@ class BaseList(object):
 		'''
 		return self._replace(chain.from_iterable(imap(lambda x: Line(x).splitlines(), self.src)))
 
-	def sort(self):
+	def sort(self, uniq=False):
 		'''
 		Return a sorted version of this stream (note: reads entire stream into memory).
-		Alias for ``sorted(self)``
+		Alias for ``sorted(self)``.
+
+		When ``uniq``=``True``, duplicates are removed from the result.
 		'''
-		return self._replace(sorted(self))
+		items = set(self) if uniq else self
+		return self._replace(sorted(items))
+
+	def sortby(self, fn=None, key=None, attr=None, method=None):
+		'''
+		Return a sorted version of this stream (note: reads entire stream into memory).
+		One (and only one) of the argument types should be provided as the sort key:
+		  - ``fn`` will sort using the return value of calling ``fn`` with each item: ``fn(item)``
+		  - ``key`` will sort using the given key of each element: ``item[key]``
+		  - ``attr`` will sort using the given attribute of each element: ``item.attr``
+		  - ``method`` will sort using the result of calling the given method (with no arguments) on each element: ``item.method()``
+		'''
+		defined_items = filter(lambda x: x is not None, (fn, key, attr, method))
+		assert len(defined_items) == 1, "exactly one of (fn, key, attr, method) arguments allowed to `sortby` method (you gave %s: %r)" % (len(defined_items), defined_items)
+
+		if key is not None: fn = operator.itemgetter(key)
+		if attr is not None: fn = operator.attrgetter(attr)
+		if method is not None: fn = operator.methodcaller(method)
+		return self._replace(sorted(self, key=fn))
 
 	def reverse(self):
 		'''

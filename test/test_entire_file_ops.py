@@ -42,10 +42,55 @@ class StreamFunctions(TestCase):
 		self.assertEqual(
 			run('p.split(".") | pp.merge() | p + "!"', ['1.2.3', '4.5.6']),
 			['1!', '2!', '3!', '4!', '5!', '6!'])
+
 	def test_reversed(self):
 		self.assertEqual(
 			run('pp.reverse()', ['1', '2']),
 			['2','1'])
+
+	def test_sort(self):
+		self.assertEqual(
+			run('pp.sort()', [3,2,1,1]),
+			['1', '1','2','3'])
+
+		self.assertEqual(
+			run('pp.sort(uniq=True)', [3,2,1,1]),
+			['1','2','3'])
+
+	def test_sortby(self):
+		self.assertEqual(
+				run('p.split() | pp.sortby(lambda x: x[0]) | p[1]', ["0 zero", "3 three", "2 two", "0 zero"]),
+			["zero", "zero", "two", "three"])
+
+	def test_sortby_key(self):
+		self.assertEqual(
+				run('p.split() | pp.sortby(key=0) | p[1]', ["0 zero", "3 three", "2 two"]),
+			["zero", "two", "three"])
+
+	def test_sortby_attr(self):
+		self.assertEqual(
+				run('int(p) | pp.sortby(attr="real")', [3,2,1,1]),
+			['1','1','2','3'])
+
+	def test_sortby_method(self):
+		self.assertEqual(
+				run('pp.sortby(method="lower")', ["bbb", "CCC", "AAA"]),
+			["AAA","bbb","CCC"])
+
+	def test_sortby_error_checking(self):
+		self.assertRaises(AssertionError, lambda: run('pp.sortby(len, key=0)', []))
+		self.assertRaises(AssertionError, lambda: run('pp.sortby(len, attr=0)', []))
+		self.assertRaises(AssertionError, lambda: run('pp.sortby(len, method=0)', []))
+
+	def test_uniq(self):
+		self.assertEqual(
+			sorted(run('pp.uniq()', [5, 4, 3, 2, 1, 2, 3, 4, 5])),
+			['1', '2', '3', '4', '5'])
+
+	def test_uniq_stable(self):
+		self.assertEqual(
+			run('pp.uniq(stable=True)', [5, 4, 1, 5, 2, 1, 3]),
+			['5','4','1','2','3'])
 	
 	def test_chunk_on_predicate(self):
 		self.assertEqual(
