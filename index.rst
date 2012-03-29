@@ -68,7 +68,7 @@ Things to note:
 File-mode expressions
 ----------------------
 
-Most of the expressions you'll use are linewise (those using only ``p`` and ``i``). If you use ``pp``, the operation happens on the entire stream. Note that the stream is read in lazily, so it should be considered to be an *iterator* rather than a list. However, many list-like operations are supported, such as slice syntax::
+Most of the expressions you'll use are linewise (those using only ``p`` and ``i``). If you use ``pp``, the operation happens on the entire stream. Note that the stream is read in lazily and cannot be "rewound", so it should be considered to be an *iterator* rather than a list. However, it does support some of the same operations::
 
   # `head`
   $ piep 'pp[:10]'
@@ -79,7 +79,10 @@ Most of the expressions you'll use are linewise (those using only ``p`` and ``i`
   # remove leading and trailing lines, then uppercase the rest:
   $ piep 'pp[1:-1] | p.upper()'
 
-Note that even slice operations are as lazy as they can be - if your slice only needs to read the first 10 lines in the input, that's all that will be read. This is extremely useful for testing out commands by limiting them to the first few lines of a big file.
+.. warning::
+	Slice syntax is supported, but is destructive and will mutate the ``pp`` iterator, so complex expressions involving slicing or indexing may have surprising results. I'm interested in improving this, but for now you can't do anything *too* fancy with ``pp``.
+
+On the plus side, even slice operations are as lazy as they can be - if your slice only needs to read the first 10 lines in the input, that's all that will be read. This is extremely useful for testing out commands by limiting them to the first few lines of a big file.
 
 .. _running shell commands:
 
