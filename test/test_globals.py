@@ -27,6 +27,9 @@ class TestShellCommands(TestCase):
 		self.skipTest("not implementable?")
 		self.assertRaises(subprocess.CalledProcessError, lambda: run('sh("false") and "ok"', ['1']))
 
+	def test_shell_failures_are_not_suppressed_when_explicitly_checked(self):
+		self.assertRaises(subprocess.CalledProcessError, lambda: run('sh("false", check=True) or "ok"', ['1']))
+
 	def test_shell_boolean_is_respected(self):
 		self.assertEqual(run('sh("true") and "ok"', ['1']), ['ok'])
 

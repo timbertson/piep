@@ -4,10 +4,10 @@ from piep.error import Exit
 
 active_commands = []
 class Command(object):
-	def __init__(self, cmd, **kw):
+	def __init__(self, cmd, check=None, **kw):
 		self.cmd = cmd
 
-		self.raise_on_error = kw.pop('check', True)
+		self.raise_on_error = check
 		defaults = dict(stdout = subprocess.PIPE)
 		defaults.update(kw)
 		self.kwargs = defaults
@@ -32,8 +32,10 @@ class Command(object):
 		self.ended = True
 		self.status = self.proc.returncode
 		self.succeeded = self.status == 0
-		if raise_on_error and self.raise_on_error and not self.succeeded:
-			raise subprocess.CalledProcessError(self.status, ' '.join(self.cmd))
+		explicitly_suppressed = self.raise_on_error is False
+		if self.raise_on_error or (raise_on_error and not explicitly_suppressed):
+			if not self.succeeded:
+				raise subprocess.CalledProcessError(self.status, ' '.join(self.cmd))
 	
 	def __nonzero__(self):
 		self.wait(raise_on_error = False)
