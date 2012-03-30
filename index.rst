@@ -164,7 +164,7 @@ If you wanted each number to come on its own line (for formatting's sake, or for
 
 The same can be done for multi-line strings, with ``flatten``::
 
-  $ echo "/bin" | piep 'sh("ls", p) | pp.flatten() | pp[:5] | " #", p'
+  $ echo "/bin" | piep 'sh("ls", p) | pp.flatten() | pp[:5] | "#", p'
   # bash
   # bunzip2
   # busybox
@@ -173,8 +173,8 @@ The same can be done for multi-line strings, with ``flatten``::
 
 Without the flatten, you would instead see output like::
 
-  $ echo "/bin" | piep 'sh("ls", p) | pp[:5] | " #", p'
-   # bash
+  $ echo "/bin" | piep 'sh("ls", p) | pp[:5] | "#", p'
+  # bash
   bunzip2
   busybox
   bzcat
