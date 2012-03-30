@@ -37,6 +37,9 @@ def main(argv=None):
 		if DEBUG:
 			import traceback
 			traceback.print_exc(file=sys.stderr)
+		if isinstance(e, (AttributeError, KeyError, AssertionError)):
+			# these ones don't have very good error messages:
+			e = "%s: %s" % (type(e).__name__, e)
 		print(str(e), file=sys.stderr)
 		sys.exit(1)
 
@@ -308,7 +311,6 @@ def compile_pipe_exprs(exprs):
 def eval_pipes(exprs, bindings):
 	mod = compile_pipe_exprs(exprs)
 	exec mod in bindings
-	debug("after pipe, pp = %r" % (bindings['pp'],))
 	return bindings['pp']
 
 if __name__ == '__main__':

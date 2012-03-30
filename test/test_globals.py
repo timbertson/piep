@@ -54,4 +54,7 @@ class TestShellCommands(TestCase):
 
 	def test_suppress_failures_explicitly(self):
 		self.assertEqual(run('sh("false", check=False) | "ok"', ['a']), ['ok'])
+	
+	def test_shell_attributes_that_dont_exist_cause_coercion_to_str(self):
+		self.assertEqual(run('sh("echo", p).upper()', ['a']), ['A'])
 

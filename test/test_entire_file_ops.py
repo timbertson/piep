@@ -6,7 +6,7 @@ from unittest import TestCase
 import itertools
 from test.test_helper import run
 
-class HeadAndTailTest(TestCase):
+class FileModificationTest(TestCase):
 	def test_head(self):
 		self.assertEqual(
 			run('pp[:2]', ['a','b','c', 'd']),
@@ -16,6 +16,11 @@ class HeadAndTailTest(TestCase):
 		self.assertEqual(
 			run('pp[-2:]', ['a','b','c', 'd']),
 			['c','d'])
+	
+	def test_str(self):
+		self.assertEqual(
+			run('str(pp)', ['a','b','c']),
+			['a\nb\nc'])
 	
 	def test_head_works_lazily(self):
 		self.assertEqual(
@@ -167,7 +172,6 @@ class TestFileModeDetection(TestCase):
 						'--file=' + f.name,
 						'--file=' + f2.name,
 						'map(len, files)', [1,2,3,4,5,6]), ['3', '4'])
-	
 
 class TestMultipleFileInput(TestCase):
 	def test_a_pair_of_files(self):

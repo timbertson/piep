@@ -80,9 +80,21 @@ Most of the expressions you'll use are linewise (those using only ``p`` and ``i`
   $ piep 'pp[1:-1] | p.upper()'
 
 .. warning::
-	Slice syntax is supported, but is destructive and will mutate the ``pp`` iterator, so complex expressions involving slicing or indexing may have surprising results. I'm interested in improving this, but for now you can't do anything *too* fancy with ``pp``.
+	Slice syntax is supported, but is destructive and will mutate the ``pp`` iterator, so complex expressions involving slicing or indexing may have surprising results. I'm interested in improving this, but for now if you try anything *too* fancy with ``pp``, it may not work as expected.
 
 On the plus side, even slice operations are as lazy as they can be - if your slice only needs to read the first 10 lines in the input, that's all that will be read. This is extremely useful for testing out commands by limiting them to the first few lines of a big file.
+
+.. note::
+	You'll get an error if you try to use both file-level objects (like ``pp``) and line-level objects (like ``p``) in a *single* expression. You can still use a mixture of file and line-level expressions, just as long as they are separated by pipes.
+
+Additional file inputs
+----------------------
+
+If you use the ``-f/--file`` option, you get additional inputs. You can pass this option multiple times, and each file will be read in as a lazy stream with the same functionality as ``pp``. These files are available as the ``files`` list. There aren't many use cases for this yet, but one is iterating over pairs of items (one from stdin, one from a file) in concert::
+
+  $ piep --file=input2 'pp.zip(files[0]) | "STDIN:%s\tINPUT:%s" % p'
+
+If you only want to use one additional file, you can use the convenient alias ``ff`` instead of ``files[0]`` to reference it.
 
 .. _running shell commands:
 
@@ -208,6 +220,15 @@ Extensibility
 --------------
 
 ``piep`` is extensible - it's just python. You can use the ``-m``/``--import`` flag to make modules available, or pass more complicated expressions to ``--eval``. Future work will allow you to write simple plugins that extend ``piep``.
+
+Changes
+-------
+
+0.6:
+  - cleaned up & documented ``--file`` functionality
+  - fix incorrect ``repr`` for shell results
+  - add the ability to explicitly check the result of shell commands, even when they are coerced into a boolean
+  - add ``pp.sort``, ``pp.sortby``, ``pp.uniq``
 
 Thanks
 -------

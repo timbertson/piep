@@ -1,6 +1,7 @@
 from __future__ import print_function
 import subprocess
 from piep.error import Exit
+from piep.line import Line
 
 active_commands = []
 class Command(object):
@@ -52,6 +53,9 @@ class Command(object):
 		return str(self) + other
 	def __radd__(self, other):
 		return other + str(self)
+
+	def __getattr__(self, attr):
+		return getattr(Line(self), attr)
 	
 def check_for_failed_commands():
 	global active_commands

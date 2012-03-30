@@ -278,6 +278,12 @@ class Stream(BaseList):
 	def __iter__(self):
 		return self.src
 
+	def __str__(self):
+		return Line("\n".join(list(self.src)))
+
+	def __repr__(self):
+		return repr(list(self.src))
+
 	def __nonzero__(self):
 		"""
 		>>> bool(Stream([1,2,3]))
