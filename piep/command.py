@@ -63,23 +63,8 @@ def run(argv=None):
 	bindings = init_globals(opts, input_file)
 
 	exprs = split_on_pipes(cmd)
-	debug("Split expressions: " + "\n".join(exprs))
-	def compile_expr(expr):
-		try:
-			return ast.parse(cmd.strip() + '\n', mode='eval').body
-		except SyntaxError as e:
-			try:
-				stmt = ast.parse(cmd.strip() + '\n', mode='exec').body
-				if len(stmt) == 1 and isinstance(stmt[0], ast.Assign):
-					# single assignments are OK
-					return stmt[0]
-				else:
-					raise e
-			except SyntaxError as e:
-				raise Exit("got error: %s\nwhile evaluating: %s" % (e,expr))
-
-	piped_exprs = [compile_expr(cmd) for cmd in exprs]
-	output = eval_pipes(piped_exprs, bindings)
+	debug("Split expressions:\n  - " + "\n  - ".join(exprs))
+	output = eval_pipes(exprs, bindings)
 
 	# strings are iterable, but we don't want to do that!
 	if isinstance(output, basestring):
@@ -112,7 +97,10 @@ def init_globals(opts, input_file):
 			exec eval_str in globs
 		except SyntaxError as e:
 			raise Exit("got error: %s\nwhile evaluating: %s" % (e,eval_str))
-	globs['f'] = [make_stream(open(f)) for f in opts.files]
+	files = [make_stream(open(f)) for f in opts.files]
+	globs['files'] = files
+	if len(files) > 0: # convenience for single file operation
+		globs['ff'] = files[0]
 	return globs
 
 
@@ -162,30 +150,49 @@ def split_on_pipes(cmds):
 		escape = False
 
 	cmd_array.append(cmd)
-	return cmd_array
+	return [c.strip() for c in cmd_array]
 
 class Mode(object):
+	__slots__ = ['desc', 'vars']
+	def __init__(self, desc, vars):
+		self.desc = desc
+		self.vars = vars
+	def __str__(self): return self.desc
+	def __repr__(self): return "<# mode: %s>" % (self,)
+
+class Modes(object):
 	__slots__ = ['GLOBAL', 'LINE']
 	def __init__(self):
-		self.GLOBAL = 'global'
-		self.LINE = 'line'
-MODE = Mode()
+		self.GLOBAL = Mode('global', set(['pp','files','ff']))
+		self.LINE = Mode('line', set(['p', 'i']))
+MODE = Modes()
+RESERVED_VARS = MODE.GLOBAL.vars.union(MODE.LINE.vars)
 
-def detect_mode(expr):
+def detect_mode(expr, source_text):
 	names = set()
 	class NameFinder(ast.NodeVisitor):
+		def visit_Assign(self, node):
+			names = set(name.id for name in node.targets if isinstance(name, ast.Name))
+			reserved_names = list(names.intersection(RESERVED_VARS))
+			if reserved_names:
+				raise AssertionError("can't assign to `%s` (expression: %s)" % (sorted(reserved_names)[0], source_text))
+			self.generic_visit(node)
+
 		def visit_Name(self, node):
-			names.add(node.id)
+			if isinstance(node.ctx, ast.Load):
+				names.add(node.id)
+			self.generic_visit(node)
 	NameFinder().visit(expr)
-	important_vars = set(['pp', 'p'])
 	debug('expr references: %r' % (names,))
 
-	mode = MODE.LINE
-	if 'pp' in names:
+	mode = None
+	if len(names.intersection(MODE.GLOBAL.vars)) > 0:
 		mode = MODE.GLOBAL
-	return mode, names
 
-
+	if len(names.intersection(MODE.LINE.vars)) > 0:
+		assert mode is None, "Can't use file-level and line-level expressions in the same pipe expression: " + source_text
+		mode = MODE.LINE
+	return (mode or MODE.LINE), names
 
 def compile_pipe_exprs(exprs):
 	body = []
@@ -198,11 +205,26 @@ def compile_pipe_exprs(exprs):
 			"p = p if _p is True else (None if _p is False else _p)\n"
 			"if p is None: return None\n"
 		).body
-	
+
+	def parse_expr(expr):
+		try:
+			return ast.parse(expr + '\n', mode='eval').body
+		except SyntaxError as e:
+			try:
+				stmt = ast.parse(expr + '\n', mode='exec').body
+				if len(stmt) == 1 and isinstance(stmt[0], ast.Assign):
+					# single assignments are OK
+					return stmt[0]
+				else:
+					raise e
+			except SyntaxError as e:
+				raise Exit("got error: %s\nwhile evaluating: %s" % (e,expr))
+
 	def annotate(expr):
 		'''get the mode & referenced variables for a given ast node'''
-		mode, vars = detect_mode(expr)
-		return expr, mode, vars
+		ast_node = parse_expr(expr)
+		mode, vars = detect_mode(ast_node, expr)
+		return ast_node, mode, vars
 
 	def name(id, ctx=None):
 		if ctx is None:
@@ -280,6 +302,7 @@ def compile_pipe_exprs(exprs):
 	mod = ast.Module(body=body)
 	ast.fix_missing_locations(mod)
 
+	#raise RuntimeError(ast.dump(mod))
 	return compile(mod, '(input)', 'exec')
 
 def eval_pipes(exprs, bindings):

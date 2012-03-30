@@ -31,7 +31,7 @@ class TestHistory(TestCase):
 	def test_cant_modify_pp_and_maintain_history(self):
 		self.assertRaises(NameError, lambda: run('p0=p | pp | p0,p', ['a']))
 	
-	def test_assigning_to_pp(self):
+	def test_assigning_from_pp(self):
 		self.assertEqual(
 			run('header = pp[0] + ":" | p.upper() | header, p', ['PYTHON', 'a.py','b.py']),
 			['PYTHON: A.PY', 'PYTHON: B.PY'])

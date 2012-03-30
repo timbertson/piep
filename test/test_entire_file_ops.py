@@ -94,7 +94,7 @@ class StreamFunctions(TestCase):
 	
 	def test_chunk_on_predicate(self):
 		self.assertEqual(
-			run('pp.divide(lambda p: "---" in p) | ".".join(p)',
+			run('pp.divide(lambda l: "---" in l) | ".".join(p)',
 				[
 					'leading',
 					'----',
@@ -113,7 +113,7 @@ class StreamFunctions(TestCase):
 
 	def test_chunk_returns_enhanced_list(self):
 		self.assertEqual(
-			run('pp.divide(lambda p: "---" in p, keep_header=False) | p.len()',
+			run('pp.divide(lambda l: "---" in l, keep_header=False) | p.len()',
 				[
 					'leading',
 					'----',
@@ -136,6 +136,38 @@ class StreamFunctions(TestCase):
 			run('[p,p] | pp.merge()', ['a','b','c']),
 			['a','a','b','b','c','c'])
 
+class TestFileModeDetection(TestCase):
+	def test_assigning_to_any_special_variable_is_disallowed(self):
+		for var in ('p', 'pp', 'ff', 'files'):
+
+			with self.assertRaises(AssertionError) as cm:
+				print("testing var " + var)
+				run(var + ' = 1', [0])
+			self.assertEqual(cm.exception.message, "can't assign to `%s` (expression: %s)" % (var,var + ' = 1'))
+
+	def test_shadowing_a_special_variable_is_ok(self):
+		self.assertEqual(run('pp.map(lambda p: 1)', [0]), ['1'])
+
+	def test_file_usage_causes_file_wise_mode(self):
+		with tempfile.NamedTemporaryFile() as f:
+			f.write('a\nb\nc\n')
+			f.seek(0)
+
+			self.assertEqual(
+				run(
+					'--file=' + f.name,
+					'len(ff)', [1,2,3,4,5,6]), ['3'])
+
+			with tempfile.NamedTemporaryFile() as f2:
+				f2.write('a\nb\nc\nd\n')
+				f2.seek(0)
+
+				self.assertEqual(
+					run(
+						'--file=' + f.name,
+						'--file=' + f2.name,
+						'map(len, files)', [1,2,3,4,5,6]), ['3', '4'])
+	
 
 class TestMultipleFileInput(TestCase):
 	def test_a_pair_of_files(self):
@@ -145,7 +177,17 @@ class TestMultipleFileInput(TestCase):
 
 			self.assertEqual(
 					run('--join=-',
-						'--file=' + f.name, 'pp.zip(f[0]) | p[0] or "", p[1].upper()', ['1']),
+						'--file=' + f.name, 'pp.zip(files[0]) | p[0] or "", p[1].upper()', ['1']),
+					['1-A','-B','-C'])
+
+	def test_file_alias_when_one_file_used(self):
+		with tempfile.NamedTemporaryFile() as f:
+			f.write('a\nb\nc\n')
+			f.seek(0)
+
+			self.assertEqual(
+					run('--join=-',
+						'--file=' + f.name, 'pp.zip(ff) | p[0] or "", p[1].upper()', ['1']),
 					['1-A','-B','-C'])
 
 	def test_zip_shortest(self):
@@ -155,6 +197,6 @@ class TestMultipleFileInput(TestCase):
 
 			self.assertEqual(
 					run('--join=-',
-						'--file=' + f.name, 'pp.zip_shortest(f[0]) | p[0], p[1].upper()', ['1']),
+						'--file=' + f.name, 'pp.zip_shortest(files[0]) | p[0], p[1].upper()', ['1']),
 					['1-A'])
 
