@@ -34,6 +34,11 @@ class Line(str):
 		return os.path.splitext(s)[1]
 
 	@wrap
+	def reversed(s):
+		'''Return a reversed version of this string'''
+		return s[::-1]
+
+	@wrap
 	def extonly(s):
 		'''
 		Return the filename extension (without the ".")

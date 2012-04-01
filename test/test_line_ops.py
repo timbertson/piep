@@ -63,4 +63,7 @@ class TestLineFunctions(TestCase):
 		self.assertEqual(run('p.match("b(?P<m>..)?","m")' ,  ['a b'])             ,  [])
 		self.assertEqual(run('p.matches("b..")'           ,  ['a bee c', 'nope']) ,  ['a bee c'])
 
+	def test_reversed(self):
+		self.assertEqual(run('p.reversed()', ['123','abc']), ['321','cba'])
+
 
