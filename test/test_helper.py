@@ -1,7 +1,7 @@
 import sys
 import itertools
 
-from piep import command
+from piep import main
 
 def run(*args):
 	args = list(args)
@@ -9,7 +9,7 @@ def run(*args):
 	old_stdin = sys.stdin
 	try:
 		sys.stdin = stdin
-		return [str(line) for line in command.run(args)]
+		return [str(line) for line in main.run(args)]
 	finally:
 		sys.stdin = old_stdin
 

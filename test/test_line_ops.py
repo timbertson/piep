@@ -27,6 +27,11 @@ class TestJoining(TestCase):
 		self.assertEqual(
 			run('--join=\\t', 'p.split(".")', ['a.b.c']),
 			['a\tb\tc'])
+	
+	def test_chaining_of_line_methods(self):
+		self.assertEqual(
+			run('p.split("-") | p.join(" ")', ['1-2-3']),
+			['1 2 3'])
 
 class TestFilters(TestCase):
 	def test_isdigit(self):

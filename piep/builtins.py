@@ -27,7 +27,7 @@ import __builtin__
 import subprocess
 import re, os, sys
 
-from piep.list import iter_length, BaseList, List, Stream
+from piep.sequence import iter_length, BaseList, List, Stream
 from piep import line
 from piep.shell import check_for_failed_commands
 builtins = {}

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import re
 
@@ -14,7 +15,9 @@ def wrap(fn, doc=False):
 	return ret
 
 def wrap_multi(fn, doc=False):
-	ret = lambda *a, **k: [Line(l) for l in fn(*a, **k)]
+	def ret(*a, **k):
+		from piep.sequence import List
+		return List(Line(l) for l in fn(*a, **k))
 	_apply_doc(ret, fn, doc)
 	return ret
 

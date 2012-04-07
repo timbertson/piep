@@ -6,7 +6,7 @@ import ast
 from optparse import OptionParser
 import itertools
 
-from piep.list import Stream, BaseList, List
+from piep.sequence import Stream, BaseList, List
 from piep.line import Line
 from piep.builtins import builtins
 from piep.error import Exit

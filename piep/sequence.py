@@ -1,7 +1,7 @@
 from itertools import *
 from piep import shell
-from piep.line import Line
 import operator
+from piep.line import Line
 
 class BaseList(object):
 	'''
@@ -101,8 +101,6 @@ class BaseList(object):
 		r'''
 		Combine a sequence of strings (containing newlines) into a sequence of lines.
 		
-		>>> list(Stream([[1],[2,3],[4,5]]).merge())
-		[1, 2, 3, 4, 5]
 		>>> list(Stream(["a\nb\nc","d\ne"]).flatten())
 		['a', 'b', 'c', 'd', 'e']
 		'''
@@ -422,4 +420,3 @@ def take(n, it, stop_short=False):
 		if stop_short:
 			return results
 		raise
-

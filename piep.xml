@@ -62,4 +62,30 @@ Bringing the power of python to stream editing
 			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.6.tgz" size="24769"/>
 		</implementation>
 	</group>
+	<group main="piep/main.py">
+		<needs-terminal/>
+		<command name="run" path="piep/main.py">
+			<runner interface="http://repo.roscidus.com/python/python"/>
+		</command>
+		<command name="doc">
+			<runner command="build" interface="http://gfxmonk.net/dist/0install/sphinx.xml"/>
+			<arg>-b</arg>
+			<arg>html</arg>
+		</command>
+		<requires interface="http://repo.roscidus.com/python/python">
+			<!-- <version not-before="3"/> -->
+			<version before="3"/>
+		</requires>
+		<requires importance="recommended" interface="http://gfxmonk.net/dist/0install/pygments.xml"/>
+		<command name="repl">
+			<runner interface="http://gfxmonk.net/dist/0install/ipython.xml"/>
+		</command>
+		<command name="test">
+			<runner command="run-py2" interface="http://gfxmonk.net/dist/0install/nosetests-runner.xml"/>
+			<arg>--with-doctest</arg>
+			<arg>--exe</arg>
+			<arg>-v</arg>
+		</command>
+		<environment insert="" mode="prepend" name="PYTHONPATH"/>
+	</group>
 </interface>
