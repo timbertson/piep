@@ -87,5 +87,9 @@ Bringing the power of python to stream editing
 			<arg>-v</arg>
 		</command>
 		<environment insert="" mode="prepend" name="PYTHONPATH"/>
+		<implementation id="sha1new=1f40be8a92ef01dec24359fd37e95189109a5ed0" released="2012-04-07" version="0.6.1">
+			<manifest-digest sha256="201c430b47cf2efefbe4efa320c97b54577da5c6ecb0a96b089c74ea3dbeb2ac"/>
+			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.6.1.tgz" size="38396"/>
+		</implementation>
 	</group>
 </interface>
