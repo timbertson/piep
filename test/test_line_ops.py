@@ -59,6 +59,7 @@ class TestLineFunctions(TestCase):
 	def test_multiple_path_functions(self):
 		self.assertEqual(run('p.upper().ext()'                       ,  ['a.py'])     ,  ['.PY'])
 		self.assertEqual(run('p.filename().splitext() | "_".join(p)' ,  ['a/b/c.py']) ,  ['c_.py'])
+		self.assertEqual(run('p.splitext().join("-") | repr(p)' ,  ['a/b/c.py'])       ,  ["'a/b/c-.py'"])
 
 	def test_regex_functions(self):
 		self.assertEqual(run('p.splitre(" +")'            ,  ['a b   c'])         ,  ['a b c'])

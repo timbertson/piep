@@ -86,7 +86,7 @@ class BaseList(object):
 
 	def join(self, s):
 		'''alias for ``s.join(self)``'''
-		return type(self)([s.join(list(self))])
+		return s.join(list(self))
 
 	def merge(self):
 		'''
