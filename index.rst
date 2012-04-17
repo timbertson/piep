@@ -84,6 +84,9 @@ Most of the expressions you'll use are linewise (those using only ``p`` and ``i`
 
 On the plus side, even slice operations are as lazy as they can be - if your slice only needs to read the first 10 lines in the input, that's all that will be read. This is extremely useful for testing out commands by limiting them to the first few lines of a big file.
 
+.. tip::
+	If you need to treat ``pp`` as a regular (non-destructively-updating) list, you can force it by starting your pipeline with ``list(pp) | ...``. That way, ``pp`` will be eagerly read in and treated as a list instead of a stream. Obviously, this will have adverse affects on memory usage for large input files.
+
 .. note::
 	You'll get an error if you try to use both file-level objects (like ``pp``) and line-level objects (like ``p``) in a *single* expression. You can still use a mixture of file and line-level expressions, just as long as they are separated by pipes.
 

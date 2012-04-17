@@ -26,6 +26,15 @@ class FileModificationTest(TestCase):
 		self.assertEqual(
 			run('pp[:4]', itertools.cycle('abc')),
 			['a','b','c', 'a'])
+	
+	def test_lists_are_not_downgraded_to_streams(self):
+		self.assertEqual(
+			run('pp[0], pp[0]', ['1','2']),
+			['1','2'])
+
+		self.assertEqual(
+			run('list(pp) | pp[0], pp[0]', ['1','2']),
+			['1','1'])
 
 class ReplaceWithNonList(TestCase):
 	def test_int(self):
