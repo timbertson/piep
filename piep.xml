@@ -91,5 +91,9 @@ Bringing the power of python to stream editing
 			<manifest-digest sha256="201c430b47cf2efefbe4efa320c97b54577da5c6ecb0a96b089c74ea3dbeb2ac"/>
 			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.6.1.tgz" size="38396"/>
 		</implementation>
+		<implementation id="sha1new=08767a1ac58aa300d4785d2b057ec48620dae625" released="2012-04-17" version="0.6.2">
+			<manifest-digest sha256="7e3e48b13fd607de5b4915da2a6d3fca8c0e004dc466d45d6cf702428cdb8430"/>
+			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.6.2.tgz" size="38394"/>
+		</implementation>
 	</group>
 </interface>
