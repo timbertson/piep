@@ -98,11 +98,18 @@ def pretty(obj):
 	return pygments.highlight(repr(obj), lexer=pygments.lexers.get_lexer_by_name('py'), formatter=pygments.formatters.get_formatter_by_name('console')).rstrip('\n\r')
 
 @add_builtin
-def _ensure_stream(pp):
+def _ensure_piep_sequence(pp):
 	if not isinstance(pp, BaseList):
+		if isinstance(pp, basestring):
+			pp = pp.splitlines()
 		# if the last expr turned pp into a normal list or some other iterable, fix that...
-		cls = List if isinstance(pp, (list, tuple)) else Stream
-		pp = cls(iter(pp))
+		cls = Stream
+		if isinstance(pp, list):
+			cls = List
+		try:
+			pp = cls(iter(pp))
+		except TypeError: # pp was presumably not iterable
+			pass
 	return pp
 
 add_builtin(check_for_failed_commands, "_check_for_failed_commands")

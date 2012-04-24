@@ -80,7 +80,7 @@ def run(argv=None):
 	else:
 		for line in output:
 			if line is not None:
-				if isinstance(line, tuple) or isinstance(line, list):
+				if isinstance(line, (tuple, list)):
 					line = opts.join.join(map(str, line))
 				yield line
 
@@ -273,7 +273,7 @@ def compile_pipe_exprs(exprs):
 
 	def ensure_stream():
 		call = ast.Call(
-			func=name('_ensure_stream'),
+			func=name('_ensure_piep_sequence'),
 			args=[name('pp')],
 			keywords=[],
 			starargs=None,

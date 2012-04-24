@@ -205,15 +205,6 @@ class Stream(BaseList):
 	def __radd__(self, other):
 		return other + list(self)
 
-	def debug(self, note=None):
-		return
-		a, b = tee(self.src)
-		self._replace(b)
-		if note is not None:
-			print("DEBUG (%s): %r" % (note,list(a)))
-		else:
-			print("DEBUG: " + repr(list(a)))
-
 	def _slice(self, start, stop, step):
 		start = start or 0
 		step = step or 1
@@ -226,13 +217,10 @@ class Stream(BaseList):
 			if positive_stop or stop is None:
 				# normal slice
 				self._replace(islice(self.src, start, stop))
-				self.debug()
 			else:
 				# normal start to negative end, e.g lst[2:-1]
 				self._replace(drop(start, self.src))
-				self.debug()
 				self._replace(pad_end(abs(stop), self.src))
-				self.debug()
 
 		else: # start < 0
 			if negative_stop:
@@ -244,7 +232,6 @@ class Stream(BaseList):
 				else:
 					start -= stop
 					self._replace(pad_end(abs(start), padded).end)
-					self.debug()
 
 			elif stop is None:
 				self._replace(pad_end(abs(start), self.src).end)
@@ -260,12 +247,10 @@ class Stream(BaseList):
 				else:
 					start += num_remaining # we already "chopped" num_remaining off the end of the original sequence
 					self._replace(first_half[start:])
-				self.debug()
 
 		# implement stepping as a post-filter once we've organised the slice
 		if step != 1:
 			self._replace(islice(self.src, 0, None, step))
-		self.debug("end of slice")
 		return self
 	
 	def __reversed__(self):
@@ -351,7 +336,6 @@ class pad_end(object):
 		self._cache[self._cache_head] = item
 		self._cache_head = (self._cache_head + 1) % self._n
 		return old_item
-
 	@property
 	def end(self):
 		exhaust(self)

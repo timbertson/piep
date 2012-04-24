@@ -62,7 +62,7 @@ Things to note:
       $ piep 'len(p.split())'
 
    But that gets messy when we get into complicated pipelines (and makes for lots of brackets).
- - if the output of a pipeline is a tuple, it will be joined together and printed. The default join string is " ", but this can be changed with ``--join``.
+ - if the output of a pipeline is a list or tuple, it will be joined together and printed. The default join string is " ", but this can be changed with ``--join``.
  - if the result of any linewise expression is a boolean or ``None``, it acts as a filter for that line (like ``grep``)
 
 File-mode expressions

@@ -35,6 +35,19 @@ class FileModificationTest(TestCase):
 		self.assertEqual(
 			run('list(pp) | pp[0], pp[0]', ['1','2']),
 			['1','1'])
+	
+	def test_strings_are_split_on_lines(self):
+		self.assertEqual(
+			run('pp[0].split().join("\\n") | p', ['1 2 3']),
+			['1','2','3'])
+
+	def test_non_list_objects_are_left_to_their_own_devices_which_may_or_may_not_succeed(self):
+		self.assertEqual(
+			run('int(pp[0]) | pp + 1', ['1', '2', '3']),
+			['2'])
+
+		self.assertRaises((TypeError, AttributeError), lambda: run('int(pp[0]) | p + 1', ['1', '2', '3']))
+
 
 class ReplaceWithNonList(TestCase):
 	def test_int(self):
