@@ -42,7 +42,7 @@ Bringing the power of python to stream editing
 			<arg>html</arg>
 		</command>
 		<requires interface="http://repo.roscidus.com/python/python">
-			<version not-before="2.7"/>
+			<version not-before="2.6"/>
 			<version before="3"/>
 		</requires>
 		<requires importance="recommended" interface="http://gfxmonk.net/dist/0install/pygments.xml"/>
@@ -73,7 +73,7 @@ Bringing the power of python to stream editing
 			<arg>html</arg>
 		</command>
 		<requires interface="http://repo.roscidus.com/python/python">
-			<version not-before="2.7"/>
+			<version not-before="2.6"/>
 			<version before="3"/>
 		</requires>
 		<requires importance="recommended" interface="http://gfxmonk.net/dist/0install/pygments.xml"/>
