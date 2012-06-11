@@ -53,6 +53,7 @@ def run(argv=None):
 	p.add_option('-m', '--import', action='append', dest='imports', default=[], metavar='MODULE', help='add a module to global scope (may be given multiple times)')
 	p.add_option('-f', '--file', action='append', dest='files', default=[], metavar='FILE', help='add another input stream (available as f[n])')
 	p.add_option('-i', '--input', dest='input', help='use a named file (instead of stdin)')
+	p.add_option('-p', '--path', action='append', dest='import_paths', default=[], help='add a location to the import path (the same as $PYTHONPATH / sys.path)')
 	opts, args = p.parse_args(argv)
 	DEBUG = opts.debug
 
@@ -91,6 +92,10 @@ def init_globals(opts, input_file):
 	pp = make_stream(input_file)
 	globs = builtins.copy()
 	globs['pp'] = pp
+	for path in opts.import_paths:
+		path = os.path.abspath(path)
+		if path not in sys.path:
+			sys.path.insert(0, path)
 	for import_mod in opts.imports:
 		import_node = ast.Import(names=[ast.alias(name=import_mod, asname=None)])
 		code = compile(ast.fix_missing_locations(ast.Module(body=[import_node])), 'import %s' % (import_mod,), 'exec')
