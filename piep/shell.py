@@ -47,12 +47,22 @@ class Command(object):
 			self.wait()
 		return self.stdout.rstrip('\n\r')
 	str = property(__str__)
-	def __repr__(self):
-		return repr(str(self))
-	def __add__(self, other):
-		return str(self) + other
-	def __radd__(self, other):
-		return other + str(self)
+	def __repr__(self): return repr(str(self))
+	def __add__(self, other): return str(self).__add__(other)
+	def __radd__(self, other): return str(self).__radd__(other)
+	def __contains__(self, other): return str(self).__contains__(other)
+	def __eq__(self, other): return str(self).__eq__(other)
+	def __hash__(self): return str(self).__hash__()
+	def __ne__(self, other): return str(self).__ne__(other)
+	def __ge__(self, other): return str(self).__ge__(other)
+	def __gt__(self, other): return str(self).__gt__(other)
+	def __lt__(self, other): return str(self).__lt__(other)
+	def __le__(self, other): return str(self).__le__(other)
+	def __mod__(self, other): return str(self).__mod__(other)
+	def __rmod__(self, other): return str(self).__rmod__(other)
+	def __mul__(self, other): return str(self).__mul__(other)
+	def __rmul__(self, other): return str(self).__rmul__(other)
+	def __getitem__(self, other): return str(self).__getitem__(other)
 
 	def __getattr__(self, attr):
 		return getattr(Line(self), attr)

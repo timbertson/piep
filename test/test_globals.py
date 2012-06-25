@@ -36,6 +36,14 @@ class TestShellCommands(TestCase):
 	def test_shell_combination(self):
 		self.assertEqual(run('sh("false") or sh("echo", "true")', ['1']), ['true'])
 
+	def test_shell_coercion_to_string(self):
+		self.assertEqual(run('sh("echo", p) | "oo" in p', ['foo', 'bar', 'boo']), ['foo', 'boo'])
+		self.assertEqual(run('sh("echo", p) | p > "doo"', ['foo', 'bar', 'boo']), ['foo'])
+		self.assertEqual(run('sh("echo", p) | p[1] == "o"', ['foo', 'bar', 'boo']), ['foo', 'boo'])
+		self.assertEqual(run('sh("echo", p) | p + "o"', ['foo', 'bar', 'boo']), ['fooo', 'baro', 'booo'])
+		self.assertEqual(run('sh("echo", "%s", p) | p % "1"', ['foo', 'bar', 'boo']), ['1 foo', '1 bar', '1 boo'])
+		self.assertEqual(run('sh("echo", p) | p * 2', ['foo', 'bar', 'boo']), ['foofoo', 'barbar', 'booboo'])
+
 	def test_shell_short_circuiting(self):
 		self.assertEqual(run('sh("echo", p) or str(sh("false"))', ['1']), ['1'])
 
