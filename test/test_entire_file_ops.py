@@ -165,12 +165,15 @@ class StreamFunctions(TestCase):
 
 class TestFileModeDetection(TestCase):
 	def test_assigning_to_any_special_variable_is_disallowed(self):
-		for var in ('p', 'pp', 'ff', 'files'):
+		for var in ('p', 'ff', 'files'):
 
 			with self.assertRaises(AssertionError) as cm:
 				print("testing var " + var)
 				run(var + ' = 1', [0])
 			self.assertEqual(cm.exception.message, "can't assign to `%s` (expression: %s)" % (var,var + ' = 1'))
+
+	def test_explicitly_setting_pp_is_ok(self):
+		self.assertEqual(run('pp = [1,2,3] | p', [1]), ['1','2','3'])
 
 	def test_shadowing_a_special_variable_is_ok(self):
 		self.assertEqual(run('pp.map(lambda p: 1)', [0]), ['1'])

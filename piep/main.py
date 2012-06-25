@@ -175,15 +175,17 @@ class Modes(object):
 		self.LINE = Mode('line', set(['p', 'i']))
 MODE = Modes()
 RESERVED_VARS = MODE.GLOBAL.vars.union(MODE.LINE.vars)
+NON_ASSIGNABLE_VARS = RESERVED_VARS.difference(['pp'])
 
 def detect_mode(expr, source_text):
 	names = set()
 	class NameFinder(ast.NodeVisitor):
 		def visit_Assign(self, node):
-			names = set(name.id for name in node.targets if isinstance(name, ast.Name))
-			reserved_names = list(names.intersection(RESERVED_VARS))
+			assigned_names = set(name.id for name in node.targets if isinstance(name, ast.Name))
+			reserved_names = list(assigned_names.intersection(NON_ASSIGNABLE_VARS))
 			if reserved_names:
 				raise AssertionError("can't assign to `%s` (expression: %s)" % (sorted(reserved_names)[0], source_text))
+			names.update(assigned_names)
 			self.generic_visit(node)
 
 		def visit_Name(self, node):
