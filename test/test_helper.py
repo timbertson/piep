@@ -4,6 +4,7 @@ import itertools
 import contextlib
 import shutil
 import tempfile
+import subprocess
 
 from piep import main
 
@@ -13,9 +14,20 @@ def run(*args):
 	old_stdin = sys.stdin
 	try:
 		sys.stdin = stdin
-		return [str(line) for line in main.run(args)]
+		return [str(line) for line in main.run(*main.parse_args(args))]
 	finally:
 		sys.stdin = old_stdin
+
+def run_full(*args):
+	args = list(args)
+	stdin = args.pop()
+	proc = subprocess.Popen(['python', main.__file__] + args, stdin=subprocess.PIPE,
+			stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	out, err = proc.communicate(stdin)
+	if proc.returncode != 0:
+		raise AssertionError("Command failed\nout: %s\nerr: %s" % (out, err))
+	return out
+
 
 @contextlib.contextmanager
 def cwd(path):

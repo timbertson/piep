@@ -22,9 +22,12 @@ def debug(*a):
 	print(*a)
 
 def main(argv=None):
+	if argv is None:
+		argv = sys.argv[1:]
 	try:
-		for line in run(argv):
-			print(line)
+		opts, args = parse_args(argv)
+		lines = run(opts, args)
+		print_results(lines, opts)
 		return 0
 	except Exit as e:
 		if e.message:
@@ -43,7 +46,7 @@ def main(argv=None):
 		print(str(e), file=sys.stderr)
 		sys.exit(1)
 
-def run(argv=None):
+def parse_args(argv=None):
 	global DEBUG
 	if argv is None: argv = sys.argv[1:]
 	p = OptionParser('usage: piep [OPTIONS] PIPELINE')
@@ -54,7 +57,28 @@ def run(argv=None):
 	p.add_option('-f', '--file', action='append', dest='files', default=[], metavar='FILE', help='add another input stream (available as f[n])')
 	p.add_option('-i', '--input', dest='input', help='use a named file (instead of stdin)')
 	p.add_option('-p', '--path', action='append', dest='import_paths', default=[], help='add a location to the import path (the same as $PYTHONPATH / sys.path)')
+	p.add_option('-0', '--read0', action='store_true', dest='input_nullsep', help='read input as null-separated fields')
+	p.add_option('--print0', action='store_true', dest='output_nullsep', help='print output as null-separated fields')
 	opts, args = p.parse_args(argv)
+	return (opts, args)
+
+def print_results(lines, opts):
+	global print_results
+	if opts.output_nullsep:
+		print_results.first = True
+		def print_line(line):
+			if print_results.first:
+				print(line, end='')
+				print_results.first = False
+			else:
+				debug("PRINTING: " + line)
+				print('\0', line, sep='', end='')
+	else:
+		print_line = print
+	for line in lines:
+		print_line(line)
+
+def run(opts, args):
 	DEBUG = opts.debug
 
 	assert len(args) == 1, p.format_help()

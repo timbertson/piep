@@ -34,7 +34,6 @@ class TestShellCommands(TestCase):
 		self.assertEqual(run('sh("true") and "ok"', ['1']), ['ok'])
 
 	def test_shell_combination(self):
-		# possible?
 		self.assertEqual(run('sh("false") or sh("echo", "true")', ['1']), ['true'])
 
 	def test_shell_short_circuiting(self):

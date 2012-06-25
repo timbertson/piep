@@ -4,7 +4,7 @@ import sys
 import tempfile
 from unittest import TestCase
 import itertools
-from test.test_helper import run
+from test.test_helper import run, run_full
 
 class FileModificationTest(TestCase):
 	def test_head(self):
@@ -228,4 +228,10 @@ class TestMultipleFileInput(TestCase):
 					run('--join=-',
 						'--file=' + f.name, 'pp.zip_shortest(files[0]) | p[0], p[1].upper()', ['1']),
 					['1-A'])
+
+class TestOutput(TestCase):
+	def test_separating_output_with_null_bytes(self):
+		self.assertEqual(
+				run_full('--print0', 'p + "_"', 'a\nb\nc'),
+				'a_\000b_\000c_')
 
