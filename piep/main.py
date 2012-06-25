@@ -58,6 +58,7 @@ def parse_args(argv=None):
 	p.add_option('-i', '--input', dest='input', help='use a named file (instead of stdin)')
 	p.add_option('-p', '--path', action='append', dest='import_paths', default=[], help='add a location to the import path (the same as $PYTHONPATH / sys.path)')
 	p.add_option('-0', '--read0', action='store_true', dest='input_nullsep', help='read input as null-separated fields')
+	p.add_option('-n', '--no-input', action='store_true', help='don\'t read stdin - self-constructing pipeline')
 	p.add_option('--print0', action='store_true', dest='output_nullsep', help='print output as null-separated fields')
 	opts, args = p.parse_args(argv)
 	return (opts, args)
@@ -71,7 +72,6 @@ def print_results(lines, opts):
 				print(line, end='')
 				print_results.first = False
 			else:
-				debug("PRINTING: " + line)
 				print('\0', line, sep='', end='')
 	else:
 		print_line = print
@@ -92,6 +92,14 @@ def run(opts, args):
 
 	exprs = split_on_pipes(cmd)
 	debug("Split expressions:\n  - " + "\n  - ".join(exprs))
+	assert len(exprs) > 0, "You must provide at least one expression"
+	if opts.no_input:
+		first_expr = parse_expr(exprs[0])
+		if isinstance(first_expr, ast.Assign):
+			assigned_names = [name.id for name in first_expr.targets]
+			assert 'pp' in assigned_names, "The first expression must assign to `pp` when --no-input is specified"
+		else:
+			exprs[0] = 'pp=' + exprs[0]
 	output = eval_pipes(exprs, bindings)
 
 	# strings are iterable, but we don't want to do that!
@@ -228,6 +236,20 @@ def detect_mode(expr, source_text):
 		mode = MODE.LINE
 	return (mode or MODE.LINE), names
 
+def parse_expr(expr):
+	try:
+		return ast.parse(expr + '\n', mode='eval').body
+	except SyntaxError as e:
+		try:
+			stmt = ast.parse(expr + '\n', mode='exec').body
+			if len(stmt) == 1 and isinstance(stmt[0], ast.Assign):
+				# single assignments are OK
+				return stmt[0]
+			else:
+				raise e
+		except SyntaxError as e:
+			raise Exit("got error: %s\nwhile evaluating: %s" % (e,expr))
+
 def compile_pipe_exprs(exprs):
 	body = []
 
@@ -239,20 +261,6 @@ def compile_pipe_exprs(exprs):
 			"p = p if _p is True else (None if _p is False else _p)\n"
 			"if p is None: return None\n"
 		).body
-
-	def parse_expr(expr):
-		try:
-			return ast.parse(expr + '\n', mode='eval').body
-		except SyntaxError as e:
-			try:
-				stmt = ast.parse(expr + '\n', mode='exec').body
-				if len(stmt) == 1 and isinstance(stmt[0], ast.Assign):
-					# single assignments are OK
-					return stmt[0]
-				else:
-					raise e
-			except SyntaxError as e:
-				raise Exit("got error: %s\nwhile evaluating: %s" % (e,expr))
 
 	def annotate(expr):
 		'''get the mode & referenced variables for a given ast node'''

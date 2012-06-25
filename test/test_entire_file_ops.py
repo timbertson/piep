@@ -235,3 +235,13 @@ class TestOutput(TestCase):
 				run_full('--print0', 'p + "_"', 'a\nb\nc'),
 				'a_\000b_\000c_')
 
+class TestInput(TestCase):
+	def test_self_constructing_pipeline(self):
+		self.assertEqual(
+				run_full('-n', '[1,2,3] | p + 1', None),
+				'2\n3\n4\n')
+
+	def test_explicit_self_constructing_pipeline(self):
+		self.assertEqual(
+				run_full('--no-input', 'pp = [1,2,3] | p + 1', None),
+				'2\n3\n4\n')
