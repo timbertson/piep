@@ -64,17 +64,17 @@ def parse_args(argv=None):
 	return (opts, args)
 
 def print_results(lines, opts):
-	global print_results
+	'''print lines separated by either \n or \0'''
+	lines = iter(lines)
+	print_line = print
 	if opts.output_nullsep:
-		print_results.first = True
+		try:
+			line = next(lines)
+		except StopIteration:
+			return
+		print(line, end='')
 		def print_line(line):
-			if print_results.first:
-				print(line, end='')
-				print_results.first = False
-			else:
-				print('\0', line, sep='', end='')
-	else:
-		print_line = print
+			print('\0', line, end='', sep='')
 	for line in lines:
 		print_line(line)
 
