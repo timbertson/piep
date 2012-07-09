@@ -22,4 +22,4 @@ clean:
 0:
 	mkzero-gfxmonk -p piep -p setup.py piep.xml
 
-.PHONY: test doc copy clean
+.PHONY: test doc copy clean 0 repl
