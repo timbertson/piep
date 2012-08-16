@@ -61,6 +61,7 @@ def parse_args(argv=None):
 	p.add_option('-n', '--no-input', action='store_true', help='don\'t read stdin - self-constructing pipeline')
 	p.add_option('--print0', action='store_true', dest='output_nullsep', help='print output as null-separated fields')
 	opts, args = p.parse_args(argv)
+	DEBUG = opts.debug
 	return (opts, args)
 
 def print_results(lines, opts):
@@ -79,8 +80,6 @@ def print_results(lines, opts):
 		print_line(line)
 
 def run(opts, args):
-	DEBUG = opts.debug
-
 	assert len(args) == 1, p.format_help()
 	cmd = args[0]
 	input_file = open(opts.input) if opts.input else sys.stdin
@@ -90,6 +89,7 @@ def run(opts, args):
 
 	bindings = init_globals(opts, input_file)
 
+	debug("Pipeline string: %s" % (cmd,))
 	exprs = split_on_pipes(cmd)
 	debug("Split expressions:\n  - " + "\n  - ".join(exprs))
 	assert len(exprs) > 0, "You must provide at least one expression"
@@ -145,51 +145,90 @@ def init_globals(opts, input_file):
 
 
 def split_on_pipes(cmds):
-	'''
+	r'''
 	splits total commmand array based on pipes taking into account quotes,
 	parentheses and escapes. returns array of commands that will be processed procedurally.
 
-	lifted from `pyp`
+	>>> split_on_pipes("a | b | c")
+	['a', 'b', 'c']
+
+	>>> split_on_pipes(r"a | (b|'\\') | d")
+	['a', "(b|'\\\\')", 'd']
+
+	>>> split_on_pipes("""a | b'"' | d'"'""")
+	['a', 'b\'"\'', 'd\'"\'']
+
+	>>> split_on_pipes('a | "(b|c" | d')
+	['a', '"(b|c"', 'd']
+
+	>>> split_on_pipes('a[1|2] | b')
+	['a[1|2]', 'b']
+
+	>>> split_on_pipes('{"x": 1|2} | b')
+	['{"x": 1|2}', 'b']
+
+	>>> split_on_pipes('{"x": (1)|2} | b')
+	['{"x": (1)|2}', 'b']
+
+	>>> split_on_pipes(r'a.replace("/", "\\") | b')
+	['a.replace("/", "\\\\")', 'b']
 	'''
 	
+	brackets = {
+		'{':'{}',
+		'}':'{}',
+		'(':'()',
+		')':'()',
+		'[':'[]',
+		']':'[]',
+	}
+	QUOTES = ('"',"'")
+
 	cmd_array = []
-	cmd = ''
-	open_single = False
-	open_double = False
-	open_parenth = 0
-	escape = False
 	letters = list(cmds)
+
 	while letters:
-		letter = letters.pop(0)
-		if cmd and cmd[-1] == '\\': escape = True
-		
-		#COUNTS QUOTES
-		if letter == "'":
-			if open_single and not escape:
-				open_single = not open_single
-			else:
-				open_single = True
-		if letter == '"':
-			if open_double and not escape:
-				open_double = not open_double
-			else:
-				open_double = True
-		
-		#COUNTS REAL PARENTHESES
-		if not open_single and not open_double:
-			if letter == '(' :
-				open_parenth = open_parenth + 1
-			if letter == ')':
-				open_parenth = open_parenth - 1
-
-		if letter == '|' and not open_single and not open_double and not open_parenth:#
-			cmd_array.append(cmd)
-			cmd = ''
-		else:
-			cmd = cmd + letter
+		cmd = ''
 		escape = False
+		context = []
+		while letters:
+			letter = letters.pop(0)
+			open_ctx = context[-1] if context else None
+			debug("got letter %r, open_ctx = %r, esc=%s" % (letter, open_ctx, escape))
 
-	cmd_array.append(cmd)
+			if not escape:
+				# check for context characters:
+				if letter in QUOTES:
+					if open_ctx == letter:
+						context.pop()
+					elif open_ctx not in QUOTES:
+						# quotes can nest in anything but quotes
+						context.append(letter)
+				elif open_ctx not in QUOTES:
+					pair = brackets.get(letter, None)
+					if pair:
+						opener, closer = pair
+						# brackets can nest in anything but quotes:
+						if letter == closer:
+							if open_ctx == opener:
+								context.pop()
+						else: # letter == opener
+							if open_ctx not in QUOTES:
+								context.append(opener)
+
+				if letter == '|' and open_ctx is None:
+					break
+
+			cmd += letter
+
+			if letter == '\\' and not escape:
+				# set `escape` for the next letter we encounter,
+				# note that two backslashes in a row reverts to unescaped
+				escape = True
+			else:
+				escape = False
+
+		cmd_array.append(cmd)
 	return [c.strip() for c in cmd_array]
 
 class Mode(object):
