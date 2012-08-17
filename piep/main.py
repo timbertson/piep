@@ -194,7 +194,7 @@ def split_on_pipes(cmds):
 		debug("got letter %r, open_ctx = %r, esc=%s" % (letter, open_ctx, escape))
 
 		if not escape:
-			# check for context characters:
+			# behave differently if inside quotes
 			if open_ctx in QUOTES:
 				if open_ctx == letter:
 					context.pop()
