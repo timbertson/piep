@@ -174,13 +174,11 @@ def split_on_pipes(cmds):
 	['a.replace("/", "\\\\")', 'b']
 	'''
 	
-	BRACKETS = {
-		'{':'{}',
-		'}':'{}',
-		'(':'()',
-		')':'()',
-		'[':'[]',
-		']':'[]',
+	OPENERS = frozenset(('{', '(', '['))
+	CLOSERS = {
+		'}':'{',
+		')':'(',
+		']':'[',
 	}
 	QUOTES = frozenset(('"',"'"))
 
@@ -202,14 +200,12 @@ def split_on_pipes(cmds):
 					context.pop()
 			else:
 				# quotes and brackets can nest in anything but quotes
-				if letter in QUOTES:
+				if letter in QUOTES or letter in OPENERS:
 					context.append(letter)
-				elif letter in BRACKETS:
-					opener, closer = BRACKETS[letter]
-					if letter == closer and open_ctx == opener:
+				elif letter in CLOSERS:
+					opener = CLOSERS[letter]
+					if open_ctx == opener:
 						context.pop()
-					else: # letter == opener
-						context.append(opener)
 
 			if letter == '|' and open_ctx is None:
 				cmd_array.append(cmd)
