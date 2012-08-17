@@ -208,7 +208,7 @@ def split_on_pipes(cmds):
 						context.pop()
 
 			if letter == '|' and open_ctx is None:
-				cmd_array.append(cmd)
+				cmd_array.append(cmd.strip())
 				cmd = ''
 				continue
 
@@ -218,8 +218,8 @@ def split_on_pipes(cmds):
 		# note that two backslashes in a row reverts to unescaped
 		escape = letter == '\\' and not escape
 
-	cmd_array.append(cmd)
-	return [c.strip() for c in cmd_array]
+	cmd_array.append(cmd.strip())
+	return cmd_array
 
 class Mode(object):
 	__slots__ = ['desc', 'vars']
