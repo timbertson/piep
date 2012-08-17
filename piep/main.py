@@ -222,12 +222,9 @@ def split_on_pipes(cmds):
 
 		cmd += letter
 
-		if letter == '\\' and not escape:
-			# set `escape` for the next letter we encounter,
-			# note that two backslashes in a row reverts to unescaped
-			escape = True
-		else:
-			escape = False
+		# if backslash, set `escape` for the next letter we encounter,
+		# note that two backslashes in a row reverts to unescaped
+		escape = letter == '\\' and not escape
 
 	cmd_array.append(cmd)
 	return [c.strip() for c in cmd_array]
