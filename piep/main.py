@@ -182,7 +182,7 @@ def split_on_pipes(cmds):
 		'[':'[]',
 		']':'[]',
 	}
-	QUOTES = ('"',"'")
+	QUOTES = frozenset(('"',"'"))
 
 	cmd_array = []
 	letters = list(cmds)
