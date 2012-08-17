@@ -197,23 +197,19 @@ def split_on_pipes(cmds):
 
 		if not escape:
 			# check for context characters:
-			if letter in QUOTES:
+			if open_ctx in QUOTES:
 				if open_ctx == letter:
 					context.pop()
-				elif open_ctx not in QUOTES:
-					# quotes can nest in anything but quotes
+			else:
+				# quotes and brackets can nest in anything but quotes
+				if letter in QUOTES:
 					context.append(letter)
-			elif open_ctx not in QUOTES:
-				pair = brackets.get(letter, None)
-				if pair:
-					opener, closer = pair
-					# brackets can nest in anything but quotes:
-					if letter == closer:
-						if open_ctx == opener:
-							context.pop()
+				elif letter in brackets:
+					opener, closer = brackets[letter]
+					if letter == closer and open_ctx == opener:
+						context.pop()
 					else: # letter == opener
-						if open_ctx not in QUOTES:
-							context.append(opener)
+						context.append(opener)
 
 			if letter == '|' and open_ctx is None:
 				cmd_array.append(cmd)
