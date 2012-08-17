@@ -174,7 +174,7 @@ def split_on_pipes(cmds):
 	['a.replace("/", "\\\\")', 'b']
 	'''
 	
-	brackets = {
+	BRACKETS = {
 		'{':'{}',
 		'}':'{}',
 		'(':'()',
@@ -204,8 +204,8 @@ def split_on_pipes(cmds):
 				# quotes and brackets can nest in anything but quotes
 				if letter in QUOTES:
 					context.append(letter)
-				elif letter in brackets:
-					opener, closer = brackets[letter]
+				elif letter in BRACKETS:
+					opener, closer = BRACKETS[letter]
 					if letter == closer and open_ctx == opener:
 						context.pop()
 					else: # letter == opener
