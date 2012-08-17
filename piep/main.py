@@ -174,62 +174,52 @@ def split_on_pipes(cmds):
 	['a.replace("/", "\\\\")', 'b']
 	'''
 	
-	brackets = {
-		'{':'{}',
-		'}':'{}',
-		'(':'()',
-		')':'()',
-		'[':'[]',
-		']':'[]',
+	OPENERS = frozenset(('{', '(', '['))
+	CLOSERS = {
+		'}':'{',
+		')':'(',
+		']':'[',
 	}
-	QUOTES = ('"',"'")
+	QUOTES = frozenset(('"',"'"))
 
 	cmd_array = []
 	letters = list(cmds)
 
+	cmd = ''
+	escape = False
+	context = []
 	while letters:
-		cmd = ''
-		escape = False
-		context = []
-		while letters:
-			letter = letters.pop(0)
-			open_ctx = context[-1] if context else None
-			debug("got letter %r, open_ctx = %r, esc=%s" % (letter, open_ctx, escape))
+		letter = letters.pop(0)
+		open_ctx = context[-1] if context else None
+		debug("got letter %r, open_ctx = %r, esc=%s" % (letter, open_ctx, escape))
 
-			if not escape:
-				# check for context characters:
-				if letter in QUOTES:
-					if open_ctx == letter:
-						context.pop()
-					elif open_ctx not in QUOTES:
-						# quotes can nest in anything but quotes
-						context.append(letter)
-				elif open_ctx not in QUOTES:
-					pair = brackets.get(letter, None)
-					if pair:
-						opener, closer = pair
-						# brackets can nest in anything but quotes:
-						if letter == closer:
-							if open_ctx == opener:
-								context.pop()
-						else: # letter == opener
-							if open_ctx not in QUOTES:
-								context.append(opener)
-
-				if letter == '|' and open_ctx is None:
-					break
-
-			cmd += letter
-
-			if letter == '\\' and not escape:
-				# set `escape` for the next letter we encounter,
-				# note that two backslashes in a row reverts to unescaped
-				escape = True
+		if not escape:
+			# behave differently if inside quotes
+			if open_ctx in QUOTES:
+				if open_ctx == letter:
+					context.pop()
 			else:
-				escape = False
+				# quotes and brackets can nest in anything but quotes
+				if letter in QUOTES or letter in OPENERS:
+					context.append(letter)
+				elif letter in CLOSERS:
+					opener = CLOSERS[letter]
+					if open_ctx == opener:
+						context.pop()
 
-		cmd_array.append(cmd)
-	return [c.strip() for c in cmd_array]
+			if letter == '|' and open_ctx is None:
+				cmd_array.append(cmd.strip())
+				cmd = ''
+				continue
+
+		cmd += letter
+
+		# if backslash, set `escape` for the next letter we encounter,
+		# note that two backslashes in a row reverts to unescaped
+		escape = letter == '\\' and not escape
+
+	cmd_array.append(cmd.strip())
+	return cmd_array
 
 class Mode(object):
 	__slots__ = ['desc', 'vars']
