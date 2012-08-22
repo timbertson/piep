@@ -56,8 +56,8 @@ Here's a few examples to give you an idea::
 
 Things to note:
 
- - The pipe character is *inside* the argument given to ``piep``, so it needs to be quoted so that the shell won't try and interpret it.
- - ``p`` is not always a string. In the first example broke apart each line into a list using ``split``, and then that list becomes the next value of ``p``. It could instead be written as::
+ - The argument to ``piep`` needs to be surrounded with quotes (otherwise your shell would try and interpret the spaces, pipes, brackets etc). Single quotes are best, to prevent any interference from the shell.
+ - ``p`` is not always a string. In the first example we broke apart each line into a list using ``split``, and then that list became the next value of ``p``. It could instead be written as::
 
       $ piep 'len(p.split())'
 

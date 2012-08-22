@@ -61,6 +61,7 @@ def parse_args(argv=None):
 	p.add_option('-n', '--no-input', action='store_true', help='don\'t read stdin - self-constructing pipeline')
 	p.add_option('--print0', action='store_true', dest='output_nullsep', help='print output as null-separated fields')
 	opts, args = p.parse_args(argv)
+	assert len(args) == 1, "Too many arguments\n" + p.format_help()
 	DEBUG = opts.debug
 	return (opts, args)
 
@@ -80,7 +81,6 @@ def print_results(lines, opts):
 		print_line(line)
 
 def run(opts, args):
-	assert len(args) == 1, p.format_help()
 	cmd = args[0]
 	input_file = open(opts.input) if opts.input else sys.stdin
 
