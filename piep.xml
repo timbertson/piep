@@ -22,6 +22,15 @@ Bringing the power of python to stream editing
 |
 | Cheese shop entry:
 | http://pypi.python.org/pypi/piep
+
+HACKING
+-------
+
+Please add tests for any new functionality.
+
+Run the tests with ``make test``. If you don't want to do it that way (perhaps you don't
+have make or zero-install), it's basically ``nosetests --with-doctest --exe``, once you've
+made sure your local version of ``piep`` is on ``$PYTHONPATH``.
 	</description>
 	<homepage>http://gfxmonk.net/dist/doc/piep/</homepage>
 	<rich-description xmlns="http://gfxmonk.net/dist/0install">
@@ -29,6 +38,9 @@ Bringing the power of python to stream editing
 			<h1 id="piep">piep</h1>
 			<h2 id="bringing-the-power-of-python-to-stream-editing">Bringing the power of python to stream editing</h2>
 			<p>Zero install feed:<br/><a href="http://gfxmonk.net/dist/0install/piep.xml">http://gfxmonk.net/dist/0install/piep.xml</a><br/><br/>Online documentation:<br/><a href="http://gfxmonk.net/dist/doc/piep">http://gfxmonk.net/dist/doc/piep</a>/<br/><br/>Source Code / Issues:<br/><a href="https://github.com/gfxmonk/piep">https://github.com/gfxmonk/piep</a>/<br/><br/>Cheese shop entry:<br/><a href="http://pypi.python.org/pypi/piep">http://pypi.python.org/pypi/piep</a></p>
+			<h2 id="hacking">HACKING</h2>
+			<p>Please add tests for any new functionality.</p>
+			<p>Run the tests with <code>make test</code>. If you don't want to do it that way (perhaps you don't have make or zero-install), it's basically <code>nosetests --with-doctest --exe</code>, once you've made sure your local version of <code>piep</code> is on <code>$PYTHONPATH</code>.</p>
 		</div>
 	</rich-description>
 	<group main="piep/command.py">
@@ -98,6 +110,10 @@ Bringing the power of python to stream editing
 		<implementation id="sha1new=ebccb9a06500c49658bb0cdee8da68d20e73d483" released="2012-06-25" version="0.7">
 			<manifest-digest sha256="ee222e70cb6c36a33c16fce870b2e6311a7679c788aa8ba1325d98679a76037c"/>
 			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.7.tgz" size="40006"/>
+		</implementation>
+		<implementation id="sha1new=49b47a10d4cc94e81f58ee9bc4526559b52e67ce" released="2012-08-22" version="0.7.1">
+			<manifest-digest sha256="4e3271c4288bd19fbd4f2b5748c9a2d4eaa0a2e00e35d521b085cac51862040d"/>
+			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.7.1.tgz" size="40697"/>
 		</implementation>
 	</group>
 </interface>
