@@ -40,7 +40,7 @@ def main(argv=None):
 		if DEBUG:
 			import traceback
 			traceback.print_exc(file=sys.stderr)
-		if isinstance(e, (AttributeError, KeyError, AssertionError)):
+		if isinstance(e, (AttributeError, KeyError, AssertionError, IndexError)):
 			# these ones don't have very good error messages:
 			e = "%s: %s" % (type(e).__name__, e)
 		print(str(e), file=sys.stderr)
@@ -54,7 +54,7 @@ def parse_args(argv=None):
 	p.add_option('-j', '--join', default=' ')
 	p.add_option('-e', '--eval', action='append', dest='evals', default=[], metavar='EVAL', help='evaluate arbitrary code before running the script (in global scope, may be given multiple times)')
 	p.add_option('-m', '--import', action='append', dest='imports', default=[], metavar='MODULE', help='add a module to global scope (may be given multiple times)')
-	p.add_option('-f', '--file', action='append', dest='files', default=[], metavar='FILE', help='add another input stream (available as f[n])')
+	p.add_option('-f', '--file', action='append', dest='files', default=[], metavar='FILE', help='add another input stream (available as files[n])')
 	p.add_option('-i', '--input', dest='input', help='use a named file (instead of stdin)')
 	p.add_option('-p', '--path', action='append', dest='import_paths', default=[], help='add a location to the import path (the same as $PYTHONPATH / sys.path)')
 	p.add_option('-0', '--read0', action='store_true', dest='input_nullsep', help='read input as null-separated fields')
