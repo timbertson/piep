@@ -236,7 +236,7 @@ class Modes(object):
 		self.LINE = Mode('line', set(['p', 'i']))
 MODE = Modes()
 RESERVED_VARS = MODE.GLOBAL.vars.union(MODE.LINE.vars)
-NON_ASSIGNABLE_VARS = RESERVED_VARS.difference(['pp'])
+NON_ASSIGNABLE_VARS = RESERVED_VARS.difference(['pp', 'p'])
 
 def detect_mode(expr, source_text):
 	names = set()
@@ -287,6 +287,7 @@ def compile_pipe_exprs(exprs):
 			"_check_for_failed_commands()\n"
 		).body
 	post_expr_check = post_pipe_check + ast.parse(
+			"if callable(_p): _p = _p(p)\n"
 			"p = p if _p is True else (None if _p is False else _p)\n"
 			"if p is None: return None\n"
 		).body

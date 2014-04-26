@@ -64,6 +64,11 @@ Things to note:
    But that gets messy when we get into complicated pipelines (and makes for lots of brackets).
  - if the output of a pipeline is a list or tuple, it will be joined together and printed. The default join string is " ", but this can be changed with ``--join``.
  - if the result of any linewise expression is a boolean or ``None``, it acts as a filter for that line (like ``grep``)
+ - if the result of any linewise expression is a callable object, it will be passed the current value of ``p`` to form the new value of ``p``. This makes it easy to chain functions by just mentioning them, e.g::
+
+      $ echo -e '1\n2\n3' | piep 'int | [p, p + 1] | pretty'
+
+   (here ``int`` is treated as ``int(p)`` and ``pretty`` is treated as ``pretty(p)``). If you need to assign a function to the value of ``p`` without having it invoked, you can so do explicitly: ``p = str``.
 
 File-mode expressions
 ----------------------

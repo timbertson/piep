@@ -72,4 +72,10 @@ class TestLineFunctions(TestCase):
 	def test_reversed(self):
 		self.assertEqual(run('p.reversed()', ['123','abc']), ['321','cba'])
 
+	def test_naked_function(self):
+		self.assertEqual(run('repr', ['abc']), [repr('abc')])
+
+	def test_assigning_naked_functions(self):
+		self.assertEqual(run('p=repr', ['abc']), [str(repr)])
+
 

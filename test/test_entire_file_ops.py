@@ -165,7 +165,7 @@ class StreamFunctions(TestCase):
 
 class TestFileModeDetection(TestCase):
 	def test_assigning_to_any_special_variable_is_disallowed(self):
-		for var in ('p', 'ff', 'files'):
+		for var in ('i', 'ff', 'files'):
 
 			with self.assertRaises(AssertionError) as cm:
 				print("testing var " + var)
