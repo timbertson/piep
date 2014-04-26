@@ -67,11 +67,11 @@ made sure your local version of ``piep`` is on ``$PYTHONPATH``.
 		<environment insert="" mode="prepend" name="PYTHONPATH"/>
 		<implementation id="sha1new=2a4d8259967de3efa8134ba132ea5a6f95644b05" released="2012-03-28" version="0.5">
 			<manifest-digest sha256="4d5a12ab1ea05367791b1f473976a71c1a0f32a6eecb4f454e00be0abd65aa0b"/>
-			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.5.tgz" size="19977"/>
+			<archive href="http://gfxmonk.net/dist/0install/impl/piep/piep-0.5.tgz" size="19977"/>
 		</implementation>
 		<implementation id="sha1new=7d8d5f1d8cac20efc056378c5003ed7def74b599" released="2012-03-30" version="0.6">
 			<manifest-digest sha256="50a05c831bc82d1b45b364ec30646788b0b74f8593eda9c0713e1e2e28915449"/>
-			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.6.tgz" size="24769"/>
+			<archive href="http://gfxmonk.net/dist/0install/impl/piep/piep-0.6.tgz" size="24769"/>
 		</implementation>
 	</group>
 	<group main="piep/main.py">
@@ -101,19 +101,19 @@ made sure your local version of ``piep`` is on ``$PYTHONPATH``.
 		<environment insert="" mode="prepend" name="PYTHONPATH"/>
 		<implementation id="sha1new=1f40be8a92ef01dec24359fd37e95189109a5ed0" released="2012-04-07" version="0.6.1">
 			<manifest-digest sha256="201c430b47cf2efefbe4efa320c97b54577da5c6ecb0a96b089c74ea3dbeb2ac"/>
-			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.6.1.tgz" size="38396"/>
+			<archive href="http://gfxmonk.net/dist/0install/impl/piep/piep-0.6.1.tgz" size="38396"/>
 		</implementation>
 		<implementation id="sha1new=08767a1ac58aa300d4785d2b057ec48620dae625" released="2012-04-17" version="0.6.2">
 			<manifest-digest sha256="7e3e48b13fd607de5b4915da2a6d3fca8c0e004dc466d45d6cf702428cdb8430"/>
-			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.6.2.tgz" size="38394"/>
+			<archive href="http://gfxmonk.net/dist/0install/impl/piep/piep-0.6.2.tgz" size="38394"/>
 		</implementation>
 		<implementation id="sha1new=ebccb9a06500c49658bb0cdee8da68d20e73d483" released="2012-06-25" version="0.7">
 			<manifest-digest sha256="ee222e70cb6c36a33c16fce870b2e6311a7679c788aa8ba1325d98679a76037c"/>
-			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.7.tgz" size="40006"/>
+			<archive href="http://gfxmonk.net/dist/0install/impl/piep/piep-0.7.tgz" size="40006"/>
 		</implementation>
 		<implementation id="sha1new=49b47a10d4cc94e81f58ee9bc4526559b52e67ce" released="2012-08-22" version="0.7.1">
 			<manifest-digest sha256="4e3271c4288bd19fbd4f2b5748c9a2d4eaa0a2e00e35d521b085cac51862040d"/>
-			<archive href="http://gfxmonk.net/dist/0install/piep/piep-0.7.1.tgz" size="40697"/>
+			<archive href="http://gfxmonk.net/dist/0install/impl/piep/piep-0.7.1.tgz" size="40697"/>
 		</implementation>
 	</group>
 </interface>
