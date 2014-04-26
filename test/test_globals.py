@@ -18,6 +18,9 @@ class TestShellCommands(TestCase):
 	def test_shell_failures_are_tracked(self):
 		self.assertRaises(subprocess.CalledProcessError, lambda: run('sh("false")', ['1']))
 
+	def test_spawn_failures_are_tracked(self):
+		self.assertRaises(subprocess.CalledProcessError, lambda: run('spawn("false")', ['1']))
+
 	def test_shell_failures_are_suppressed(self):
 		self.assertEqual(
 			run('sh("false") or "failed"', ['1']),
@@ -49,6 +52,9 @@ class TestShellCommands(TestCase):
 
 	def test_shell_in_pipes(self):
 		self.assertEqual(run('sh("echo", p) | "%s) %s" % (i, p)', ['a']), ['0) a'])
+	
+	def test_spawn(self):
+		self.assertEqual(run('spawn("echo", "hello")', ['a']), ['a'])
 	
 	def test_concat(self):
 		self.assertEqual(run('sh("echo", p) + p', ['a']), ['aa'])

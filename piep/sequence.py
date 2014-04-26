@@ -120,10 +120,11 @@ class BaseList(object):
 		'''
 		Return a sorted version of this stream (note: reads entire stream into memory).
 		One (and only one) of the argument types should be provided as the sort key:
-		  - ``fn`` will sort using the return value of calling ``fn`` with each item: ``fn(item)``
-		  - ``key`` will sort using the given key of each element: ``item[key]``
-		  - ``attr`` will sort using the given attribute of each element: ``item.attr``
-		  - ``method`` will sort using the result of calling the given method (with no arguments) on each element: ``item.method()``
+
+		- ``fn`` will sort using the return value of calling ``fn`` with each item: ``fn(item)``
+		- ``key`` will sort using the given key of each element: ``item[key]``
+		- ``attr`` will sort using the given attribute of each element: ``item.attr``
+		- ``method`` will sort using the result of calling the given method (with no arguments) on each element: ``item.method()``
 		'''
 		defined_items = filter(lambda x: x is not None, (fn, key, attr, method))
 		assert len(defined_items) == 1, "exactly one of (fn, key, attr, method) arguments allowed to `sortby` method (you gave %s: %r)" % (len(defined_items), defined_items)

@@ -19,6 +19,10 @@ Aliases:
 
 	Alias for the ``piep.List`` class (a subclass of ``list`` containing all the same methods as ``pp`` does from :class:`piep.BaseList`)
 
+.. data:: devnull
+
+	A readable and writable file pointing to the null device (/dev/null)
+
 Globally-accessible functions:
 
 '''
@@ -29,7 +33,7 @@ import re, os, sys
 
 from piep.sequence import iter_length, BaseList, List, Stream
 from piep import line
-from piep.shell import check_for_failed_commands
+from piep.shell import Command, check_for_failed_commands
 builtins = {}
 
 
@@ -74,8 +78,20 @@ def sh(*args, **kwargs):
 
 	For more info, see :ref:`running shell commands`
 	'''
-	from piep.shell import Command
 	return Command(args, **kwargs)
+
+@add_builtin
+def spawn(*a, **k):
+	'''acts exactly like ``sh``, except that it just returns ``True``.
+
+	For more info, see :ref:`running shell commands`
+	'''
+
+	sh(*a, **k)
+	return True
+
+devnull = open(os.devnull, 'r+')
+add_builtin(devnull, 'devnull')
 
 @add_builtin
 @line.wrap_multi
@@ -111,5 +127,13 @@ def _ensure_piep_sequence(pp):
 		except TypeError: # pp was presumably not iterable
 			pass
 	return pp
+
+
+@add_builtin
+def ignore(*a):
+	'''Ignore all arguments and returns ``True``.
+	Occasionally useful to evaluate an expression for its
+	side-effects without making use of its value.'''
+	return True
 
 add_builtin(check_for_failed_commands, "_check_for_failed_commands")

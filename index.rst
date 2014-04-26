@@ -110,7 +110,17 @@ Running shell commands
 
   $ echo -e "setup.py\nMakefile" | piep 'sh("wc", "-l", p)'
 
-The output of ``sh`` is whatever the command prints. If a command fails, an exception will be raised telling you so::
+The output of ``sh`` is whatever the command prints.
+
+If you wish to run a command without using the output, you can use the ``spawn`` function instead. This acts just like ``sh``, except the output is ignored and the expression returns
+``True`` (which will maintain the existing value of ``p`` in a pipeline)::
+
+  $ ls -1 | piep 'spawn("touch", p) | "Touched: " + p'
+
+
+If you still want to see the command output printed without it becoming part of the pipeline, you can pass ``stdout=None`` to suppress the default redirection.
+
+If a command fails (when using from either ``sh`` or ``spawn``), an exception will be raised telling you so::
 
   $ echo -e "setup.py\nMakefile" | piep 'sh("false")'
   Command 'false' returned non-zero exit status 1
@@ -123,13 +133,14 @@ If you wish to suppress this behaviour, you can do so explicitly::
   line!
   line!
 
-Or by coercing it to a boolean (it is assumed that if you use a command as a boolean, you will be managing failures yourself)::
+Or (for ``sh`` only) by coercing it to a boolean - it is assumed that if you use a command as a boolean, you will be managing failures yourself::
 
   $ echo -e "echo ok\nfalse" | piep 'p.split() | sh(*p) or "(failed)"'
   ok
   (failed)
 
-If you absolutely must use shell syntax, you can pass the keyword argument ``shell=True``. But the author strongly advises against this.
+
+If you absolutely must use shell syntax, you can pass the keyword argument ``shell=True``.
 
 Utility methods
 ----------------
