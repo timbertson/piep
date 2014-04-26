@@ -1,8 +1,8 @@
 test: piep-local.xml
 	0launch --command=test piep-local.xml
 
-piep-local.xml: piep.xml
-	0launch http://gfxmonk.net/dist/0install/0local.xml piep.xml
+piep-local.xml: piep.xml.template
+	0launch http://gfxmonk.net/dist/0install/0local.xml piep.xml.template
 
 repl: piep-local.xml
 	0launch --command=repl piep-local.xml
