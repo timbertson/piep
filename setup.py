@@ -11,7 +11,7 @@ setup(
 	name='piep',
 	url='http://gfxmonk.net/dist/0install/piep.xml',
 	install_requires=['setuptools', 'python>=2.6', 'pygments'],
-	version='0.7.1',
+	version='0.8.0',
 	long_description="\n**Note**: This package has been built automatically by\n`zero2pypi <http://gfxmonk.net/dist/0install/zero2pypi.xml>`_.\nIf possible, you should use the zero-install feed instead:\nhttp://gfxmonk.net/dist/0install/piep.xml\n\n----------------\n\npiep\n====\n\nBringing the power of python to stream editing\n----------------------------------------------\n\n| Zero install feed:\n| http://gfxmonk.net/dist/0install/piep.xml\n|\n| Online documentation:\n| http://gfxmonk.net/dist/doc/piep/\n|\n| Source Code / Issues:\n| https://github.com/gfxmonk/piep/\n|\n| Cheese shop entry:\n| http://pypi.python.org/pypi/piep\n\nHACKING\n-------\n\nPlease add tests for any new functionality.\n\nRun the tests with ``make test``. If you don't want to do it that way (perhaps you don't\nhave make or zero-install), it's basically ``nosetests --with-doctest --exe``, once you've\nmade sure your local version of ``piep`` is on ``$PYTHONPATH``.\n",
 	description="unix-style stream manipulation with python's syntax",
 )

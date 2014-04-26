@@ -1,3 +1,4 @@
 *-local.xml
 doc/build/
 *.egg-info
+/gup
