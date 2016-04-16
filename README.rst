@@ -1,6 +1,8 @@
 piep
 ====
 
+.. image:: http://gfxmonk.net/dist/status/project/piep.png
+
 Bringing the power of python to stream editing
 ----------------------------------------------
 
