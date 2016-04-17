@@ -1,6 +1,8 @@
 piep
 ====
 
+.. image:: http://gfxmonk.net/dist/status/project/piep.png
+
 Bringing the power of python to stream editing
 ----------------------------------------------
 
@@ -8,32 +10,15 @@ Bringing the power of python to stream editing
 
 It's released under the GPLv3 licence (see the LICENCE file).
 
-| Zero install feed:
-| http://gfxmonk.net/dist/0install/piep.xml
-
 | Online documentation:
 | http://gfxmonk.net/dist/doc/piep/
 
 | Source Code / Issues:
 | https://github.com/gfxmonk/piep/
 
-| Cheese shop entry:
+| Pypi:
 | http://pypi.python.org/pypi/piep
 
-
-Getting it
-------------
-The preferred distribution method is via `Zero Install <http://0install.net/>`_. To make it available to your user as ``piep``, you should run::
-
-  $ 0alias piep http://gfxmonk.net/dist/0install/piep.xml
-
-If you just want to try it out and don't want to make an alias, you can run it without changing anything on your system::
-
-  $ 0launch http://gfxmonk.net/dist/0install/piep.xml
-
-**Note**: This requires ``zero install`` to be installed. On linux, this is usually part of the ``zeroinstall-injector`` package. Zero install is cross-platform, see `the website <http://0install.net/>`_ for installation on other platforms.
-
-If you must, you can most likely ``pip install piep``. But that route is less well supported, as the author strongly discourages the use of language-specific platform managers, especially those as convoluted as setuptools/distutils/distribute/packaging.
 
 Quickstart
 -----------
