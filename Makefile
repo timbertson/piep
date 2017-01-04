@@ -1,14 +1,8 @@
-test: piep-local.xml
-	0launch --command=test piep-local.xml
+test: phony
+	nosetests --with-doctest --exe
 
-piep-local.xml: piep.xml.template
-	0launch http://gfxmonk.net/dist/0install/0local.xml piep.xml.template
-
-repl: piep-local.xml
-	0launch --command=repl piep-local.xml
-
-doc: piep-local.xml
-	0launch --command=doc piep-local.xml -b html -a -E \
+doc: phony
+	sphinx-build -b html -a -E \
 		-D version=`cat VERSION` \
 		-D release=`cat VERSION` \
 		. doc/build
@@ -16,7 +10,7 @@ doc: piep-local.xml
 copy: doc
 		rsync -avz --delete doc/build/ ~/Sites/gfxmonk/dist/doc/piep/
 
-clean:
+clean: phony
 	git clean -fdx
 
-.PHONY: test doc copy clean 0 repl
+.PHONY: phony

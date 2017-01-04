@@ -1,0 +1,14 @@
+{
+  "inputs": {
+    "owner": "timbertson",
+    "repo": "piep",
+    "rev": "version-0.8.0",
+    "version": "0.8.0"
+  },
+  "params": {
+    "owner": "timbertson",
+    "repo": "piep",
+    "rev": "version-0.8.0",
+    "sha256": "1hz1lxd2s23vnjr37s2zn2lky9mhcxy1s3qdgsh8145dgnysdj3a"
+  }
+}
