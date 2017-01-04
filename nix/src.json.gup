@@ -1,4 +1,0 @@
-#!bash -eu
-
-gup -u src.in.json ../VERSION
-nix-prefetch-src -i src.in.json -o "$1" --set version "$(cat ../VERSION)"
