@@ -1,14 +1,17 @@
 {
-  "inputs": {
-    "owner": "timbertson",
-    "repo": "piep",
+  "fetch": {
+    "args": {
+      "owner": "timbertson",
+      "repo": "piep",
+      "rev": "version-0.8.1",
+      "sha256": "0xjnbk5cm4g660zafvi1gfvlpxda92646bz82r8010bcaw11zsrn"
+    },
+    "fn": "fetchFromGitHub",
     "rev": "version-0.8.1",
     "version": "0.8.1"
   },
-  "params": {
-    "owner": "timbertson",
-    "repo": "piep",
-    "rev": "version-0.8.1",
-    "sha256": "0xjnbk5cm4g660zafvi1gfvlpxda92646bz82r8010bcaw11zsrn"
-  }
+  "owner": "timbertson",
+  "repo": "piep",
+  "rev": "version-{version}",
+  "type": "fetchFromGitHub"
 }
