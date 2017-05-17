@@ -2,6 +2,7 @@ from itertools import *
 from piep import shell
 import operator
 from piep.line import Line
+from .pycompat import *
 
 class BaseList(object):
 	'''
@@ -36,7 +37,7 @@ class BaseList(object):
 			if isinstance(result, bool):
 				return line if result else None
 			return result
-		return self._replace(ifilter(lambda x: x is not None, imap(_transform, self.src)))
+		return self._replace(filter(lambda x: x is not None, map(_transform, self.src)))
 
 	def uniq(self, stable=False):
 		'''Remove duplicates. Note: if ``stable`` is not given (or is ``False``),
@@ -104,7 +105,7 @@ class BaseList(object):
 		>>> list(Stream(["a\nb\nc","d\ne"]).flatten())
 		['a', 'b', 'c', 'd', 'e']
 		'''
-		return self._replace(chain.from_iterable(imap(lambda x: Line(x).splitlines(), self.src)))
+		return self._replace(chain.from_iterable(map(lambda x: Line(x).splitlines(), self.src)))
 
 	def sort(self, uniq=False):
 		'''
@@ -125,7 +126,7 @@ class BaseList(object):
 		- ``attr`` will sort using the given attribute of each element: ``item.attr``
 		- ``method`` will sort using the result of calling the given method (with no arguments) on each element: ``item.method()``
 		'''
-		defined_items = filter(lambda x: x is not None, (fn, key, attr, method))
+		defined_items = list(filter(lambda x: x is not None, (fn, key, attr, method)))
 		assert len(defined_items) == 1, "exactly one of (fn, key, attr, method) arguments allowed to `sortby` method (you gave %s: %r)" % (len(defined_items), defined_items)
 
 		if key is not None: fn = operator.itemgetter(key)

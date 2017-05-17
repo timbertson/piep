@@ -27,9 +27,9 @@ Globally-accessible functions:
 
 '''
 from __future__ import print_function
-import __builtin__
 import subprocess
 import re, os, sys
+from .pycompat import *
 
 from piep.sequence import iter_length, BaseList, List, Stream
 from piep import line
@@ -40,7 +40,7 @@ builtins = {}
 def add_builtin(fn, name=None):
 	name = name or fn.__name__
 	if name in builtins:
-		warn('overriding piep_builtin %r' % (name,))
+		print('WARN: overriding piep_builtin %r' % (name,))
 	builtins[name] = fn
 	return fn
 
@@ -55,7 +55,7 @@ add_builtin(List, 'List')
 def len(obj):
 	'''like the builtin ``len``, but works (destructively) on iterators.'''
 	try:
-		return __builtin__.len(obj)
+		return python_builtin.len(obj)
 	except TypeError as e:
 		try:
 			it = iter(obj)

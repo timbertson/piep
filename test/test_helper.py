@@ -21,8 +21,13 @@ def run(*args):
 def run_full(*args):
 	args = list(args)
 	stdin = args.pop()
-	proc = subprocess.Popen(['python', main.__file__] + args, stdin=subprocess.PIPE,
-			stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	proc = subprocess.Popen([sys.executable, '-m', 'piep'] + args,
+		stdin=subprocess.PIPE,
+		stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+		env={
+			'PYTHONPATH': os.path.dirname(os.path.dirname(main.__file__))
+		}
+	)
 	out, err = proc.communicate(stdin)
 	if proc.returncode != 0:
 		raise AssertionError("Command failed\nout: %s\nerr: %s" % (out, err))

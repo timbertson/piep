@@ -23,7 +23,7 @@ class Command(object):
 		if self.proc is None:
 			try:
 				self.proc = subprocess.Popen(self.cmd, **self.kwargs)
-			except OSError, e:
+			except OSError as e:
 				raise Exit("error executing %r: %s" % (list(self.cmd), e))
 	
 	def wait(self, raise_on_error=True):
@@ -45,7 +45,7 @@ class Command(object):
 	def __str__(self):
 		if not self.checked:
 			self.wait()
-		return (self.stdout or '').rstrip('\n\r')
+		return (self.stdout.decode('utf-8') or '').rstrip('\n\r')
 	str = property(__str__)
 	def __repr__(self): return repr(str(self))
 	def __add__(self, other): return str(self).__add__(other)

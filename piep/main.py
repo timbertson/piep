@@ -11,10 +11,7 @@ from piep.line import Line
 from piep.builtins import builtins
 from piep.error import Exit
 
-if sys.version_info < (3,):
-	imap = itertools.imap
-else:
-	imap = map
+from .pycompat import *
 
 DEBUG = False
 def debug(*a):
@@ -61,6 +58,7 @@ def parse_args(argv=None):
 	p.add_option('-n', '--no-input', action='store_true', help='don\'t read stdin - self-constructing pipeline')
 	p.add_option('--print0', action='store_true', dest='output_nullsep', help='print output as null-separated fields')
 	opts, args = p.parse_args(argv)
+	assert len(args) > 0, "Not enough arguments\n" + p.format_help()
 	assert len(args) == 1, "Too many arguments\n" + p.format_help()
 	DEBUG = opts.debug
 	return (opts, args)
@@ -84,8 +82,7 @@ def run(opts, args):
 	cmd = args[0]
 	input_file = open(opts.input) if opts.input else sys.stdin
 
-	opts.join = opts.join.decode('string_escape')
-	# bytes(myString, "utf-8").decode("unicode_escape") # python3
+	opts.join = opts.join.encode('utf-8').decode('unicode_escape')
 
 	bindings = init_globals(opts, input_file)
 
@@ -119,7 +116,7 @@ def run(opts, args):
 
 def init_globals(opts, input_file):
 	def make_stream(f):
-		return Stream(imap(lambda x: Line(x.rstrip('\n\r')), iter(f)))
+		return Stream(map(lambda x: Line(x.rstrip('\n\r')), iter(f)))
 
 	pp = make_stream(input_file)
 	globs = builtins.copy()
@@ -134,7 +131,7 @@ def init_globals(opts, input_file):
 		eval(code, globs)
 	for eval_str in opts.evals:
 		try:
-			exec eval_str in globs
+			execfn(eval_str, globs)
 		except SyntaxError as e:
 			raise Exit("got error: %s\nwhile evaluating: %s" % (e,eval_str))
 	files = [make_stream(open(f)) for f in opts.files]
@@ -303,6 +300,12 @@ def compile_pipe_exprs(exprs):
 			ctx = ast.Load()
 		return ast.Name(id=id, ctx=ctx)
 
+	if is_python_2:
+		arg = name
+	else:
+		def arg(id):
+			return ast.arg(id, None)
+
 	def assign(var, expr):
 		return ast.Assign(targets=[name(var, ctx=ast.Store())], value=expr)
 
@@ -316,9 +319,11 @@ def compile_pipe_exprs(exprs):
 		transform_def = ast.FunctionDef(
 			name='_transformer',
 			args=ast.arguments(
-				args=[name('p'), name('i')],
+				args=[arg('p'), arg('i')],
 				vararg=None,
 				kwarg=None,
+				kwonlyargs=[],
+				kw_defaults=[],
 				defaults=[]
 			),
 			body=body + [ast.Return(name('p'))],
@@ -379,7 +384,7 @@ def compile_pipe_exprs(exprs):
 
 def eval_pipes(exprs, bindings):
 	mod = compile_pipe_exprs(exprs)
-	exec mod in bindings
+	execfn(mod, bindings)
 	return bindings['pp']
 
 if __name__ == '__main__':
