@@ -146,7 +146,7 @@ Methods available on `p` (an input line)
 Methods available on `pp` (the input stream)
 ++++++++++++++++++++++++++++++++++++++++++++
 
-.. autoclass:: piep.list.BaseList
+.. autoclass:: piep.sequence.BaseList
   :members:
 
 Global functions / variables

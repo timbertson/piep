@@ -121,6 +121,7 @@ class BaseList(object):
 		'''
 		Return a sorted version of this stream (note: reads entire stream into memory).
 		One (and only one) of the argument types should be provided as the sort key:
+		
 		- ``fn`` will sort using the return value of calling ``fn`` with each item: ``fn(item)``
 		- ``key`` will sort using the given key of each element: ``item[key]``
 		- ``attr`` will sort using the given attribute of each element: ``item.attr``
