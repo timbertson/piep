@@ -4,4 +4,5 @@ pythonPackages.buildPythonPackage rec {
   inherit (source) src version;
   name = "piep-${version}";
   propagatedBuildInputs = with pythonPackages; [ pygments ];
+  checkInputs = with pythonPackages; [ nose ];
 }

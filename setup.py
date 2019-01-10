@@ -9,4 +9,5 @@ setup(
 	version='0.9.1',
 	description="unix-style stream manipulation with python's syntax",
 	test_suite = 'nose.collector',
+	tests_require = ['nose'],
 )

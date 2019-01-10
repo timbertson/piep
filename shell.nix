@@ -4,7 +4,7 @@ let
 		let pkg = callPackage base { inherit pythonPackages; }; in
 		lib.overrideDerivation pkg (base: {
 			nativeBuildInputs = base.nativeBuildInputs ++ (
-				with pythonPackages; [nose nose_progressive sphinx]
+				with pythonPackages; [nose_progressive sphinx]
 			);
 		});
 	py2 = makeDev nix/default.nix python2Packages;
