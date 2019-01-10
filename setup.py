@@ -8,4 +8,5 @@ setup(
 	install_requires=['pygments'],
 	version='0.9.0',
 	description="unix-style stream manipulation with python's syntax",
+	test_suite = 'nose.collector',
 )
