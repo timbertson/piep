@@ -55,7 +55,7 @@ class BaseList(object):
 		return List(items)
 
 	def zip(self, *others):
-		'''Combine this stream with another, yielding sequentail paris from each stream.
+		'''Combine this stream with another, yielding sequential pairs from each stream.
 		When one sequence is shorter than the other, it's padded with ``None`` elements.
 		Basically, ``itertools.izip_longest(self, *others)``
 		
