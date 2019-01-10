@@ -38,9 +38,10 @@ class Command(object):
 			if not self.succeeded:
 				raise subprocess.CalledProcessError(self.status, ' '.join(self.cmd))
 	
-	def __nonzero__(self):
+	def __bool__(self):
 		self.wait(raise_on_error = False)
 		return self.succeeded
+	__nonzero__ = __bool__ # py2 compat
 
 	def __str__(self):
 		if not self.checked:
@@ -69,8 +70,10 @@ class Command(object):
 	
 def check_for_failed_commands():
 	global active_commands
-	for cmd in active_commands:
-		if not cmd.checked:
-			cmd.wait()
-	active_commands = []
+	try:
+		for cmd in active_commands:
+			if not cmd.checked:
+				cmd.wait()
+	finally:
+		active_commands = []
 

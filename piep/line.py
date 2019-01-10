@@ -86,7 +86,6 @@ class Line(str):
 	# copy all `str` builtins
 	capitalize = wrap(str.capitalize)
 	center     = wrap(str.center)
-	encode     = wrap(str.encode)
 	expandtabs = wrap(str.expandtabs)
 	format     = wrap(str.format)
 	join       = wrap(str.join)

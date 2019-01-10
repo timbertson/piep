@@ -8,7 +8,7 @@ doc: phony
 		. doc/build
 
 copy: doc
-		rsync -avz --delete doc/build/ ~/Sites/gfxmonk/dist/doc/piep/
+	rsync -avz --delete doc/build/ ~/Sites/gfxmonk/dist/doc/piep/
 
 clean: phony
 	git clean -fdx

@@ -6,6 +6,10 @@ from unittest import TestCase
 import itertools
 from test.test_helper import run, run_full
 
+def write_and_rewind(f, contents):
+	f.write(contents.encode('ascii'))
+	f.seek(0)
+
 class FileModificationTest(TestCase):
 	def test_head(self):
 		self.assertEqual(
@@ -23,9 +27,12 @@ class FileModificationTest(TestCase):
 			['a\nb\nc'])
 	
 	def test_head_works_lazily(self):
-		self.assertEqual(
-			run('pp[:4]', itertools.cycle('abc')),
-			['a','b','c', 'a'])
+		try:
+			self.assertEqual(
+				run('pp[:4]', itertools.cycle('abc')),
+				['a','b','c','a'])
+		except MemoryError:
+			assert False, "memory exhausted trying to consume infinite sequence"
 	
 	def test_lists_are_not_downgraded_to_streams(self):
 		self.assertEqual(
@@ -170,7 +177,7 @@ class TestFileModeDetection(TestCase):
 			with self.assertRaises(AssertionError) as cm:
 				print("testing var " + var)
 				run(var + ' = 1', [0])
-			self.assertEqual(cm.exception.message, "can't assign to `%s` (expression: %s)" % (var,var + ' = 1'))
+			self.assertEqual(str(cm.exception), "can't assign to `%s` (expression: %s)" % (var,var + ' = 1'))
 
 	def test_explicitly_setting_pp_is_ok(self):
 		self.assertEqual(run('pp = [1,2,3] | p', [1]), ['1','2','3'])
@@ -180,8 +187,7 @@ class TestFileModeDetection(TestCase):
 
 	def test_file_usage_causes_file_wise_mode(self):
 		with tempfile.NamedTemporaryFile() as f:
-			f.write('a\nb\nc\n')
-			f.seek(0)
+			write_and_rewind(f, 'a\nb\nc\n')
 
 			self.assertEqual(
 				run(
@@ -189,8 +195,7 @@ class TestFileModeDetection(TestCase):
 					'len(ff)', [1,2,3,4,5,6]), ['3'])
 
 			with tempfile.NamedTemporaryFile() as f2:
-				f2.write('a\nb\nc\nd\n')
-				f2.seek(0)
+				write_and_rewind(f2, 'a\nb\nc\nd\n')
 
 				self.assertEqual(
 					run(
@@ -201,9 +206,7 @@ class TestFileModeDetection(TestCase):
 class TestMultipleFileInput(TestCase):
 	def test_a_pair_of_files(self):
 		with tempfile.NamedTemporaryFile() as f:
-			f.write('a\nb\nc\n')
-			f.seek(0)
-
+			write_and_rewind(f, 'a\nb\nc\n')
 			self.assertEqual(
 					run('--join=-',
 						'--file=' + f.name, 'pp.zip(files[0]) | p[0] or "", p[1].upper()', ['1']),
@@ -211,8 +214,7 @@ class TestMultipleFileInput(TestCase):
 
 	def test_file_alias_when_one_file_used(self):
 		with tempfile.NamedTemporaryFile() as f:
-			f.write('a\nb\nc\n')
-			f.seek(0)
+			write_and_rewind(f, 'a\nb\nc\n')
 
 			self.assertEqual(
 					run('--join=-',
@@ -221,8 +223,7 @@ class TestMultipleFileInput(TestCase):
 
 	def test_zip_shortest(self):
 		with tempfile.NamedTemporaryFile() as f:
-			f.write('a\nb\nc\n')
-			f.seek(0)
+			write_and_rewind(f, 'a\nb\nc\n')
 
 			self.assertEqual(
 					run('--join=-',

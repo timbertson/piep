@@ -57,12 +57,12 @@ class BaseList(object):
 	def zip(self, *others):
 		'''Combine this stream with another, yielding sequential pairs from each stream.
 		When one sequence is shorter than the other, it's padded with ``None`` elements.
-		Basically, ``itertools.izip_longest(self, *others)``
+		Basically, ``itertools.zip_longest(self, *others)``
 		
 		>>> list(Stream([1,2,3,4]).zip(['one','two','three']))
 		[(1, 'one'), (2, 'two'), (3, 'three'), (4, None)]
 		'''
-		return self._replace(izip_longest(self.src, *others))
+		return self._replace(zip_longest(self.src, *others))
 
 	def zip_shortest(self, *others):
 		'''Like :data:`zip`, but stops once any of the sequences ends.
@@ -70,7 +70,7 @@ class BaseList(object):
 		>>> list(Stream([1,2,3,4]).zip_shortest(['one','two','three']))
 		[(1, 'one'), (2, 'two'), (3, 'three')]
 		'''
-		return self._replace(izip(self.src, *others))
+		return self._replace(zip(self.src, *others))
 
 	def map_index(self, fn):
 		i = [0]
@@ -152,9 +152,71 @@ class List(list, BaseList):
 	
 	len = list.__len__
 
+class _SafeBoolIterator(object):
+	@classmethod
+	def of_iter(cls, it):
+		try:
+			head = next(it)
+		except StopIteration:
+			return _EmptyIterator()
+		else:
+			return _NonEmptyIterator(head, it)
+
+	def __iter__(self): return self
+
+	# py2 compat
+	def next(self): return self.__next__()
+	def __nonzero__(self): return self.__bool__()
+
+class _EmptyIterator(_SafeBoolIterator):
+	def __next__(self): raise StopIteration
+	def __bool__(self): return False
+
+class _NonEmptyIterator(_SafeBoolIterator):
+	"""
+	An iterator which keeps a reference to its own `head`,
+	useful to check the first element without actually
+	consuming it.
+
+	>>> it = _NonEmptyIterator(1, [2,3])
+	>>> list(it)
+	[1, 2, 3]
+	"""
+	def __init__(self, head, tail):
+		self._replace(head, iter(tail))
+
+	def _replace(self, head, tail):
+		self._head = head
+		self._tail = tail
+		self._it = None
+
+	def __bool__(self):
+		if self._it is None:
+			# head not consumed
+			return True
+		else:
+			# head consumed, consume the next item (if any) and
+			# keep it as the new head
+			try:
+				head = next(self._it)
+			except StopIteration:
+				return False
+			else:
+				self._replace(head, self._tail)
+
+	def __iter__(self):
+		return self
+
+	def __next__(self):
+		if self._it is None:
+			self._it = self._tail
+			return self._head
+		else:
+			return next(self._it)
+
 class Stream(BaseList):
 	def __init__(self, src):
-		self.src = iter(src)
+		self._replace(src)
 	
 	def __getitem__(self, n):
 		"""
@@ -268,22 +330,32 @@ class Stream(BaseList):
 	def __repr__(self):
 		return repr(list(self.src))
 
-	def __nonzero__(self):
+	def __bool__(self):
 		"""
 		>>> bool(Stream([1,2,3]))
 		True
+
 		>>> bool(Stream([]))
 		False
+
 		>>> bool(Stream(repeat(1)))
 		True
+
+		# ensure `bool` doesn't consume `head`
+		>>> s = Stream(iter([1]))
+		>>> bool(s)
+		True
+		>>> bool(s)
+		True
+		>>> bool(s)
+		True
 		"""
-		a,b = tee(self.src)
-		self._replace(a)
-		try:
-			next(b)
-		except StopIteration:
-			return False
-		return True
+		# force self.src to be a bool-safe iterator first
+		if not isinstance(self.src, _SafeBoolIterator):
+			self._replace(_SafeBoolIterator.of_iter(self.src))
+		return bool(self.src)
+
+	__nonzero__ = __bool__
 
 class pad_end(object):
 	"""
@@ -332,8 +404,7 @@ class pad_end(object):
 			print("Key Error %s" % (e,))
 			print("cache = %r" % (self._cache))
 			print("cache head = %r" % (self._cache_head))
-			return 'NOPE'
-			#raise
+			raise
 		self._cache[self._cache_head] = item
 		self._cache_head = (self._cache_head + 1) % self._n
 		return old_item
