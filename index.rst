@@ -228,11 +228,16 @@ Extensibility
 Changes
 -------
 
-0.6:
-  - cleaned up & documented ``--file`` functionality
-  - fix incorrect ``repr`` for shell results
-  - add the ability to explicitly check the result of shell commands, even when they are coerced into a boolean
-  - add ``pp.sort``, ``pp.sortby``, ``pp.uniq``
+0.10:
+  - drop python2
+
+0.9:
+  - python3 support
+
+0.8:
+  - bug fixes, particularly parsing edge cases (thanks Matt Giuca)
+  - add ``spawn()``, ``devnull`` and ``ignore()`` builtins
+  - auto-invocation of pipeline expressions that return functions - i.g. ``str`` now evaluates to ``str(p)``
 
 0.7:
   - added ``Line.reverse()``
@@ -240,10 +245,11 @@ Changes
   - add ``--no-input`` (self-constrcting pipeline) mode
   - add ``--print0`` mode to separate output records with the null byte
 
-0.8:
-  - bug fixes, particularly parsing edge cases (thanks Matt Giuca)
-  - add ``spawn()``, ``devnull`` and ``ignore()`` builtins
-  - auto-invocation of pipeline expressions that return functions - i.g. ``str`` now evaluates to ``str(p)``
+0.6:
+  - cleaned up & documented ``--file`` functionality
+  - fix incorrect ``repr`` for shell results
+  - add the ability to explicitly check the result of shell commands, even when they are coerced into a boolean
+  - add ``pp.sort``, ``pp.sortby``, ``pp.uniq``
 
 Thanks
 -------
