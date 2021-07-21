@@ -143,7 +143,7 @@ def init_globals(opts, input_file):
 
 def split_on_pipes(cmds):
 	r'''
-	splits total commmand array based on pipes taking into account quotes,
+	splits total command array based on pipes taking into account quotes,
 	parentheses and escapes. returns array of commands that will be processed procedurally.
 
 	>>> split_on_pipes("a | b | c")
