@@ -1,6 +1,0 @@
-{
-	"type": "fetchFromGitHub",
-	"repo": "piep",
-	"owner": "timbertson",
-	"rev": "version-{version}"
-}

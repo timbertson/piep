@@ -1,8 +1,13 @@
-{ lib, pythonPackages, nix-update-source }:
+{ lib, python3Packages, nix-update-source }:
 let source = nix-update-source.fetch ./src.json; in
-pythonPackages.buildPythonPackage rec {
+with python3Packages;
+buildPythonPackage rec {
   inherit (source) src version;
   name = "piep-${version}";
-  propagatedBuildInputs = with pythonPackages; [ pygments ];
-  checkInputs = with pythonPackages; [ nose ];
+  buildInputs = [ pip ];
+  propagatedBuildInputs = [ pygments ];
+  checkInputs = [ nose ];
+  dontUseSetuptoolsBuild = true;
+  dontUsePipInstall = true;
+  dontUseSetuptoolsCheck = true;
 }

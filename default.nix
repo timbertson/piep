@@ -1,2 +1,6 @@
 with import <nixpkgs> {};
-callPackage nix/default.nix {}
+lib.overrideDerivation (
+  callPackage nix/default.nix {}
+) (o: {
+  src = builtins.fetchGit { url = ./.; };
+})

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 import os, sys
@@ -127,7 +127,7 @@ def init_globals(opts, input_file):
 			sys.path.insert(0, path)
 	for import_mod in opts.imports:
 		import_node = ast.Import(names=[ast.alias(name=import_mod, asname=None)])
-		code = compile(ast.fix_missing_locations(ast.Module(body=[import_node])), 'import %s' % (import_mod,), 'exec')
+		code = compile(ast.fix_missing_locations(ast.Module(body=[import_node], type_ignores=[])), 'import %s' % (import_mod,), 'exec')
 		eval(code, globs)
 	for eval_str in opts.evals:
 		try:
@@ -319,6 +319,7 @@ def compile_pipe_exprs(exprs):
 		transform_def = ast.FunctionDef(
 			name='_transformer',
 			args=ast.arguments(
+				posonlyargs=[],
 				args=[arg('p'), arg('i')],
 				vararg=None,
 				kwarg=None,
@@ -376,7 +377,7 @@ def compile_pipe_exprs(exprs):
 				body.append(expr)
 				body.extend(post_pipe_check)
 	
-	mod = ast.Module(body=body)
+	mod = ast.Module(body=body, type_ignores=[])
 	ast.fix_missing_locations(mod)
 
 	#raise RuntimeError(ast.dump(mod))

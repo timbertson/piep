@@ -10,12 +10,6 @@ from io import StringIO
 from piep import main
 from piep.pycompat import *
 
-def limit_heap_size():
-	import resource
-	limit = 1024 * 1000 * 200 # 200mb
-	resource.setrlimit(resource.RLIMIT_DATA, (0, limit))
-limit_heap_size()
-
 def run(*args):
 	args = list(args)
 	input_lines = args.pop()

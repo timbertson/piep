@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from setuptools import *
 setup(
 	packages = find_packages(exclude=['test', 'test.*']),
