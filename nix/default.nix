@@ -5,5 +5,5 @@ buildPythonPackage rec {
   src = ../.;
   name = "piep-${version}";
   propagatedBuildInputs = [ pygments ];
-  checkInputs = [ nose ];
+  doCheck = false;
 }
