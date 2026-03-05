@@ -4,6 +4,8 @@ let version = builtins.readFile ../VERSION; in
 buildPythonPackage rec {
   src = ../.;
   name = "piep-${version}";
+  pyproject = true;
+  build-system = [ setuptools ];
   propagatedBuildInputs = [ pygments ];
   doCheck = false;
 }
